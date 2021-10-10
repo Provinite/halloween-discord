@@ -1,5 +1,5 @@
 {
-  "name": "halloween-discord",
+  "name": "@clovercoin/halloween-discord",
   "version": "0.1.0",
   "bin": {
     "halloween-discord": "bin/halloween-discord.js"
