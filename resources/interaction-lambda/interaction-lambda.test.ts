@@ -127,20 +127,6 @@ describe("lambda:interaction", () => {
 
     expect(result).toMatchSnapshot();
   });
-  it("must not ACK an invalid PING", async () => {
-    const result = await callHandlerSigned(
-      {
-        body: JSON.stringify({ type: 2 }),
-      },
-      secretKey,
-    );
-
-    const bodyObj = JSON.parse(result.body);
-    expect(bodyObj.error.message).toMatchInlineSnapshot(`"Bad request"`);
-    expect(result.statusCode).toBe(400);
-
-    expect(result).toMatchSnapshot();
-  });
 });
 
 async function callHandlerSigned(
