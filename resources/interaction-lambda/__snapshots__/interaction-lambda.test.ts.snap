@@ -9,17 +9,6 @@ Object {
 }
 `;
 
-exports[`lambda:interaction must not ACK an invalid PING 2`] = `
-Object {
-  "body": "{
-  \\"error\\": {
-    \\"message\\": \\"Bad request\\"
-  }
-}",
-  "statusCode": 400,
-}
-`;
-
 exports[`lambda:interaction signature verification errors if signature is not provided 2`] = `
 Object {
   "body": "{\\"error\\":{\\"message\\":\\"Invalid request, missing signature elements. Requests to this API must be signed with the \\\\\\"X-Signature-Ed25519\\\\\\" and \\\\\\"X-Signature-Timestamp\\\\\\" headers\\"}}",
