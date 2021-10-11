@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`lambda:interaction must ACK a PING 1`] = `
+Object {
+  "body": "{
+  \\"type\\": 1
+}",
+  "statusCode": 200,
+}
+`;
+
+exports[`lambda:interaction must not ACK an invalid PING 2`] = `
+Object {
+  "body": "{
+  \\"error\\": {
+    \\"message\\": \\"Bad request\\"
+  }
+}",
+  "statusCode": 400,
+}
+`;
+
+exports[`lambda:interaction signature verification errors if signature is not provided 2`] = `
+Object {
+  "body": "{\\"error\\":{\\"message\\":\\"Invalid request, missing signature elements. Requests to this API must be signed with the \\\\\\"X-Signature-Ed25519\\\\\\" and \\\\\\"X-Signature-Timestamp\\\\\\" headers\\"}}",
+  "statusCode": 401,
+}
+`;
+
+exports[`lambda:interaction signature verification errors if the signature is invalid 2`] = `
+Object {
+  "body": "{\\"error\\":{\\"message\\":\\"Invalid request, invalid request signature\\"}}",
+  "statusCode": 401,
+}
+`;
+
+exports[`lambda:interaction signature verification errors if timestamp is not provided 2`] = `
+Object {
+  "body": "{\\"error\\":{\\"message\\":\\"Invalid request, missing signature elements. Requests to this API must be signed with the \\\\\\"X-Signature-Ed25519\\\\\\" and \\\\\\"X-Signature-Timestamp\\\\\\" headers\\"}}",
+  "statusCode": 401,
+}
+`;

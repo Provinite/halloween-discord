@@ -6,7 +6,7 @@ import {
 import * as cdk from "@aws-cdk/core";
 import * as HalloweenDiscord from "../lib/halloween-discord-stack";
 
-test("Empty Stack", () => {
+test.skip("Empty Stack", () => {
   const app = new cdk.App();
   // WHEN
   const stack = new HalloweenDiscord.HalloweenDiscordStack(app, "MyTestStack");
