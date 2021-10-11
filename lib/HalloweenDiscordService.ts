@@ -1,5 +1,9 @@
 import { Construct, Duration } from "@aws-cdk/core";
-import { LambdaIntegration, RestApi } from "@aws-cdk/aws-apigateway";
+import {
+  LambdaIntegration,
+  MethodLoggingLevel,
+  RestApi,
+} from "@aws-cdk/aws-apigateway";
 import { Runtime } from "@aws-cdk/aws-lambda";
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 
@@ -10,21 +14,26 @@ export class HalloweenDiscordService extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    this.apiGateway = new RestApi(this, "discord-api");
+    this.apiGateway = new RestApi(this, "discord-api", {
+      deployOptions: {
+        loggingLevel: MethodLoggingLevel.INFO,
+        dataTraceEnabled: true,
+      },
+    });
 
     this.interactionLambda = new NodejsFunction(
       this,
       "discord-interaction-lambda",
       {
         runtime: Runtime.NODEJS_14_X,
-        entry: "resources/interaction-lambda.ts",
+        entry: "resources/interaction-lambda/interaction-lambda.ts",
         handler: "handler",
-        environment: {},
+        environment: {
+          DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
+        },
       },
     );
-  }
 
-  hookupLambdas(): void {
     this.apiGateway.root.addMethod(
       "POST",
       new LambdaIntegration(this.interactionLambda, {

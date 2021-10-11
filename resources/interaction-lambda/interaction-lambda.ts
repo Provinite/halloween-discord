@@ -1,13 +1,14 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import { sign } from "tweetnacl";
 import { envService } from "./EnvService";
+import { getHeader } from "./getHeader";
 import { SignatureHeaders } from "./SignatureHeaders";
 
 export const handler: APIGatewayProxyHandler = async (
   event,
 ): Promise<APIGatewayProxyResult> => {
-  const signature = event.headers[SignatureHeaders.Signature];
-  const timestamp = event.headers[SignatureHeaders.Timestamp];
+  const signature = getHeader(event.headers, SignatureHeaders.Signature);
+  const timestamp = getHeader(event.headers, SignatureHeaders.Timestamp);
   const rawBody = event.body || "";
 
   // Verify signature
@@ -82,11 +83,16 @@ export const handler: APIGatewayProxyHandler = async (
     }
   }
 
+  // Actual interaction handling
   return {
-    statusCode: 400,
+    statusCode: 200,
     body: JSON.stringify({
-      error: {
-        message: "Bad request",
+      type: 4,
+      data: {
+        tts: false,
+        content: "Congrats on sending your command",
+        embeds: [],
+        allowed_mentions: { parse: [] },
       },
     }),
   };
