@@ -4,7 +4,13 @@ Typescript serverless CDK construct for hosting the cloverse halloween discord e
 
 ## Construct
 
-![AWS Infrastructure Diagram indicating communication with Discord via an API Gateway using Lambda proxies, DynamoDB, and an SQS queue for fulfillment](/docs/Halloween%20Discord%20Bot%20Infra.drawio.png)
+![AWS Infrastructure Diagram indicating communication with Discord via an API Gateway using Lambda proxies, DynamoDB, and an SQS queue for fulfillment](/docs/infrastructure.drawio.png)
+
+## Slash Commands
+
+The app uses slash commands for user interaction. Everything is managed this way. The commands available are detailed in the following diagram.
+
+![A gigantic unreadable flow chart detailing the discord slash commands for the application](/docs/command-workflows.drawio.png)
 
 ## Useful commands
 
