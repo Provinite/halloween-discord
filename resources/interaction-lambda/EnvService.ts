@@ -8,4 +8,10 @@ export const envService = {
     }
     return hexToUint8Array(hexKey);
   },
+  getFulfillmentQueueUrl(): string {
+    if (!process.env.FULFILLMENT_QUEUE_URL) {
+      throw new Error("Missing: process.env.FULFILLMENT_QUEUE_URL");
+    }
+    return process.env.FULFILLMENT_QUEUE_URL;
+  },
 };
