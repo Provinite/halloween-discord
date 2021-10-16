@@ -1,4 +1,4 @@
-import { Construct, Duration } from "@aws-cdk/core";
+import { Construct, Duration, SecretValue } from "@aws-cdk/core";
 import {
   LambdaIntegration,
   MethodLoggingLevel,
