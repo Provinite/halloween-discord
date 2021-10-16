@@ -1,18 +1,27 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
-import { sign } from "tweetnacl";
-import { envService } from "./EnvService";
 import { getHeader } from "./getHeader";
 import { SignatureHeaders } from "./SignatureHeaders";
 import { sendFulfillmentMessage } from "./fulfillment";
-import { apiGatewayResult } from "./lambda/apiGatewayResult";
+import { apiGatewayResult } from "../common/lambda/apiGatewayResult";
 import {
+  APIInteractionResponseChannelMessageWithSource,
   APIInteractionResponseDeferredChannelMessageWithSource,
+  APIInteractionResponsePong,
   InteractionResponseType,
+  MessageFlags,
 } from "discord-api-types/v9";
-
+import { verifyDiscordInteraction } from "./discord/verifyDiscordInteraction";
+import { isApplicationCommandGuildInteraction } from "discord-api-types/utils/v9";
+import { isPingInteraction } from "./discord/isPingInteraction";
+import { parseBody } from "../common/lambda/parseBody";
+import { isApplicationCommandInteraction } from "./discord/isApplicationCommandInteraction";
 export const handler: APIGatewayProxyHandler = async (
   event,
+  ctx,
 ): Promise<APIGatewayProxyResult> => {
+  // Prevent the knex connection pool from keeping the lambda running
+  ctx.callbackWaitsForEmptyEventLoop = false;
+
   const requestTime = event.requestContext.requestTimeEpoch;
 
   const signature = getHeader(event.headers, SignatureHeaders.Signature);
@@ -20,18 +29,7 @@ export const handler: APIGatewayProxyHandler = async (
   const rawBody = event.body || "";
 
   // Verify signature
-  if (!signature || !timestamp) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({
-        error: {
-          message: `Invalid request, missing signature elements. Requests to this API must be signed with the "${SignatureHeaders.Signature}" and "${SignatureHeaders.Timestamp}" headers`,
-        },
-      }),
-    };
-  }
-
-  if (!isVerified(timestamp, rawBody, signature)) {
+  if (!verifyDiscordInteraction(timestamp, rawBody, signature)) {
     return {
       statusCode: 401,
       body: JSON.stringify({
@@ -41,17 +39,7 @@ export const handler: APIGatewayProxyHandler = async (
       }),
     };
   }
-
-  let body: any = undefined;
-  try {
-    if (!event.body) {
-      body = {};
-    } else {
-      body = JSON.parse(event.body);
-    }
-  } catch (err) {
-    body = undefined;
-  }
+  const body = parseBody(event.body);
   if (!body) {
     return apiGatewayResult({
       statusCode: 400,
@@ -63,41 +51,44 @@ export const handler: APIGatewayProxyHandler = async (
     });
   }
 
-  // ACK pings
-  if (body.type === 1) {
-    return {
-      statusCode: 200,
-      body: JSON.stringify(
-        {
-          type: 1,
-        },
-        null,
-        2,
-      ),
-    };
-  }
-
-  // Actual interaction handling
-  // TODO: validate interaction body
-  await sendFulfillmentMessage(body, requestTime);
-  return apiGatewayResult<APIInteractionResponseDeferredChannelMessageWithSource>(
-    {
+  if (isPingInteraction(body)) {
+    return apiGatewayResult<APIInteractionResponsePong>({
       statusCode: 200,
       body: {
-        type: InteractionResponseType.DeferredChannelMessageWithSource,
+        type: InteractionResponseType.Pong,
       },
-    },
-  );
-};
-
-function isVerified(timestamp: string, body: string, signature: string) {
-  try {
-    return sign.detached.verify(
-      Buffer.from(timestamp + body),
-      Buffer.from(signature, "hex"),
-      envService.getDiscordPublicKey(),
-    );
-  } catch (err) {
-    return false;
+    });
+  } else if (isApplicationCommandInteraction(body)) {
+    if (isApplicationCommandGuildInteraction(body)) {
+      await sendFulfillmentMessage(body, requestTime);
+      return apiGatewayResult<APIInteractionResponseDeferredChannelMessageWithSource>(
+        {
+          statusCode: 200,
+          body: {
+            type: InteractionResponseType.DeferredChannelMessageWithSource,
+          },
+        },
+      );
+    } else {
+      return apiGatewayResult<APIInteractionResponseChannelMessageWithSource>({
+        statusCode: 200,
+        body: {
+          data: {
+            flags: MessageFlags.Ephemeral,
+            content: "This command may only be used in a guild.",
+          },
+          type: InteractionResponseType.ChannelMessageWithSource,
+        },
+      });
+    }
+  } else {
+    return apiGatewayResult({
+      statusCode: 400,
+      body: {
+        error: {
+          message: "Bad request, only application commands are supported.",
+        },
+      },
+    });
   }
-}
+};

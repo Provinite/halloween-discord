@@ -6,7 +6,7 @@ import {
   InteractionType,
 } from "discord-api-types";
 import createHttpError = require("http-errors");
-import { apiGatewayResult } from "../lambda/apiGatewayResult";
+import { apiGatewayResult } from "../../common/lambda/apiGatewayResult";
 
 export async function knockCommand(
   interaction: APIInteraction,
