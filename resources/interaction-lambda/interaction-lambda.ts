@@ -15,7 +15,7 @@ import { isPingInteraction } from "./discord/isPingInteraction";
 import { parseBody } from "../common/lambda/parseBody";
 import { isApplicationCommandInteraction } from "./discord/isApplicationCommandInteraction";
 import { Lambda } from "aws-sdk";
-import { envService } from "./EnvService";
+import { envService } from "../common/envService";
 
 const lambda = new Lambda();
 

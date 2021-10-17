@@ -1,5 +1,5 @@
 import { sign } from "tweetnacl";
-import { envService } from "../EnvService";
+import { envService } from "../../common/envService";
 
 export function verifyDiscordInteraction(
   timestamp: string | null,

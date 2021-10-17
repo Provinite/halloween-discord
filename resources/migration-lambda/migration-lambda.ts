@@ -2,6 +2,7 @@ import { closeKnex } from "../common/db/client";
 import "pg";
 import { runMigrations } from "./lib/runMigrations";
 import { createMigrationTable } from "./lib/createMigrationTable";
+import { logger } from "../common/log";
 
 let stats = {
   total: 0,
@@ -21,7 +22,7 @@ export const handler: () => Promise<{
     finished: 0,
     madeChanges: false,
   };
-  console.log(`Migrations starting, creating migration table if not exists`);
+  logger.log(`Migrations starting, creating migration table if not exists`);
   await createMigrationTable();
   try {
     await runMigrations(stats);
@@ -41,6 +42,6 @@ export const handler: () => Promise<{
     migrationsConsidered: stats.total,
     madeChanges: stats.madeChanges,
   };
-  console.log(JSON.stringify(result, null, 2));
+  logger.info(result);
   return result;
 };

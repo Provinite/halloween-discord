@@ -1,3 +1,4 @@
+import { logger } from "../../common/log";
 import migrations from "./migrations";
 import { runMigration } from "./runMigration";
 import { shouldRunMigration } from "./shouldRunMigration";
@@ -18,11 +19,11 @@ export async function runMigrations(
   let migrationCount = 1;
   stats.total = migrations.length;
 
-  console.log(`Starting migrations. [${stats.total}]`);
+  logger.log(`Starting migrations. [${stats.total}]`);
 
   for (const migration of migrations) {
     const logPrefix = `[${migrationCount}/${migrations.length}:${migration.id}]: `;
-    const log = (msg: string) => console.log(`${logPrefix}${msg}`);
+    const log = (msg: string) => logger.log(`${logPrefix}${msg}`);
 
     if (await shouldRunMigration(migration)) {
       log(`Running migration`);
@@ -31,14 +32,14 @@ export async function runMigrations(
         stats.madeChanges = true;
         stats.finished++;
       } catch (err) {
-        console.error(`${logPrefix}Error processing migration`);
+        logger.error(`${logPrefix}Error processing migration`);
         if (err && (err as any).stack) {
           const error = err as Error;
-          console.error(error.name);
-          console.error(error.message);
-          console.error(error.stack);
+          logger.error(error.name);
+          logger.error(error.message);
+          logger.error(error.stack);
         } else {
-          console.error(err);
+          logger.error(err);
         }
         throw err;
       }

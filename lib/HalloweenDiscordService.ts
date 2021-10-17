@@ -136,6 +136,7 @@ export class HalloweenDiscordService extends Construct {
           process.env.cchdiscord_discord_client_secret || "",
         DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
+        NODE_OPTIONS: "--enable-source-maps",
       },
       tracing: Tracing.PASS_THROUGH,
     });

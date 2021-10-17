@@ -4,6 +4,8 @@ import {
   RESTPatchAPIInteractionOriginalResponseResult,
 } from "discord-api-types/v9";
 import { isAxiosError } from "../axios/isAxiosError";
+import { envService } from "../envService";
+import { logger } from "../log";
 
 /**
  * @see https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response
@@ -17,12 +19,7 @@ export async function updateInteractionResponse(
   interactionToken: string,
   body: RESTPatchAPIInteractionOriginalResponseJSONBody,
 ): Promise<RESTPatchAPIInteractionOriginalResponseResult> {
-  // TODO: Move to envservice
-  // PERF: Perpetually reading from process.env is slow
-  const appId = process.env.DISCORD_APPLICATION_ID;
-  if (!appId) {
-    throw new Error("Missing: process.env.DISCORD_APPLICATION_ID");
-  }
+  const appId = envService.getDiscordApplicationId();
   try {
     const authHeader = `Bearer ${authToken}`;
     const response = await axios.patch<
@@ -41,7 +38,7 @@ export async function updateInteractionResponse(
     return response.data;
   } catch (err: any) {
     if (isAxiosError(err)) {
-      console.error({
+      logger.error({
         message: `Failed communicating with the discord API (${err.name}): ${err.message}`,
         url: err.config.url,
         responseData: err.response?.data,
@@ -50,14 +47,14 @@ export async function updateInteractionResponse(
       throw err;
     } else if (err) {
       const errAny = err as any;
-      console.error({
+      logger.error({
         message: `Failed communicating with the discord API: ${errAny.message}`,
         errorName: errAny.name,
         stack: errAny.stack,
       });
       throw err;
     } else {
-      console.error({
+      logger.error({
         name: "name" in err ? err.name : "Unknown",
       });
       throw new Error(

@@ -2,20 +2,14 @@ import axios, { AxiosResponse } from "axios";
 import { RESTPostOAuth2ClientCredentialsResult } from "discord-api-types/rest/v9";
 import { URLSearchParams } from "url";
 import { isAxiosError } from "../axios/isAxiosError";
+import { envService } from "../envService";
+import { logger } from "../log";
 
 // PERF: Reusing tokens would be smart. Maybe through SSM?
 // At the very least, store it for warm invocations
 export async function getClientCredentialsToken(): Promise<string> {
-  const appId = process.env.DISCORD_APPLICATION_ID;
-  const secret = process.env.DISCORD_CLIENT_SECRET;
-
-  if (!appId) {
-    throw new Error("Missing: process.env.DISCORD_APPLICATION_ID");
-  }
-
-  if (!secret) {
-    throw new Error("Missing: process.env.DISCORD_CLIENT_SECRET");
-  }
+  const appId = envService.getDiscordApplicationId();
+  const secret = envService.getDiscordClientSecret();
 
   const data = new URLSearchParams();
   data.append("grant_type", "client_credentials");
@@ -39,7 +33,7 @@ export async function getClientCredentialsToken(): Promise<string> {
     );
   } catch (err) {
     if (isAxiosError(err)) {
-      console.error({
+      logger.error({
         message: `Failed communicating with the discord API (${err.name}): ${err.message}`,
         url: err.config.url,
         responseData: err.response?.data,

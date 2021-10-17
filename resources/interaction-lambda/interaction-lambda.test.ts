@@ -4,7 +4,7 @@ import {
   Context,
 } from "aws-lambda";
 import nacl = require("tweetnacl");
-import { envService } from "./EnvService";
+import { envService } from "../common/envService";
 import { handler } from "./interaction-lambda";
 import { SignatureHeaders } from "./SignatureHeaders";
 

@@ -6,6 +6,7 @@ import { KnockCommand } from "./commands/Knock";
 import { HalloweenCommand } from "./HalloweenCommand";
 import { getClientCredentialsToken } from "../common/discord/getClientCredentialsToken";
 import { updateInteractionResponse } from "../common/discord/updateInteractionResponse";
+import { logger } from "../common/log";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
@@ -13,7 +14,7 @@ export type CommandLambdaEvent = {
 // TODO: Wrap handler in an error-handler that will
 // complete the interaction
 export const handler = async (event: CommandLambdaEvent): Promise<void> => {
-  console.log({ event });
+  logger.log({ event });
   // TODO: Can we use the discord API to verify
   // that the interaction is still ok?
   const { body } = event;
