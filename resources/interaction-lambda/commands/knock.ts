@@ -4,7 +4,7 @@ import {
   APIInteractionResponse,
   InteractionResponseType,
   InteractionType,
-} from "discord-api-types";
+} from "discord-api-types/v9";
 import createHttpError = require("http-errors");
 import { apiGatewayResult } from "../../common/lambda/apiGatewayResult";
 

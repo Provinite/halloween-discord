@@ -1,17 +1,29 @@
 import { hexToUint8Array } from "./text/TextUtils";
 
+let discordPublicKey: Uint8Array;
+let commandLambdaArn: string;
+
 export const envService = {
   getDiscordPublicKey(): Uint8Array {
+    if (discordPublicKey) {
+      return discordPublicKey;
+    }
     const hexKey = process.env.DISCORD_PUBLIC_KEY;
     if (!hexKey) {
       throw new Error("Missing: process.env.DISCORD_PUBLIC_KEY");
     }
-    return hexToUint8Array(hexKey);
+    discordPublicKey = hexToUint8Array(hexKey);
+    return discordPublicKey;
   },
-  getFulfillmentQueueUrl(): string {
-    if (!process.env.FULFILLMENT_QUEUE_URL) {
-      throw new Error("Missing: process.env.FULFILLMENT_QUEUE_URL");
+  getCommandLambdaArn(): string {
+    if (commandLambdaArn) {
+      return commandLambdaArn;
     }
-    return process.env.FULFILLMENT_QUEUE_URL;
+    const arn = process.env.COMMAND_LAMBDA_ARN;
+    if (!arn) {
+      throw new Error("Missing: process.env.COMMAND_LAMBDA_ARN");
+    }
+    commandLambdaArn = arn;
+    return commandLambdaArn;
   },
 };

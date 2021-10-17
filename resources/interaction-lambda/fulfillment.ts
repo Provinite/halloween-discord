@@ -1,13 +1,13 @@
 import { SQS } from "aws-sdk";
-import { APIApplicationCommandGuildInteraction } from "discord-api-types";
+import { APIApplicationCommandGuildInteraction } from "discord-api-types/v9";
 import createHttpError = require("http-errors");
 import { FulfillmentMessageBody } from "../common/fulfillment/FulfillmentMessageBody";
-import { envService } from "./EnvService";
 
 export async function sendFulfillmentMessage(
   interaction: APIApplicationCommandGuildInteraction,
   requestTimestamp: number,
 ): Promise<void> {
+  throw new Error("Not implemented.");
   if (!interaction.guild_id) {
     throw new createHttpError[400]("Interaction is missing guild id");
   }
@@ -31,7 +31,7 @@ export async function sendFulfillmentMessage(
   await sqs
     .sendMessage({
       MessageBody: JSON.stringify(messageBody),
-      QueueUrl: envService.getFulfillmentQueueUrl(),
+      QueueUrl: "TODO",
       MessageGroupId: interaction.guild_id,
       MessageDeduplicationId: `${interaction.guild_id}+${interaction.member.user.id}+${requestTimestamp}`,
     })

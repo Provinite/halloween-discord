@@ -20,6 +20,12 @@
       {
         "argsIgnorePattern": "^_"
       }
+    ],
+    "@typescript-eslint/explicit-module-boundary-types": [
+      "error",
+      {
+        "allowArgumentsExplicitlyTypedAsAny": true
+      }
     ]
   },
   "overrides": [
