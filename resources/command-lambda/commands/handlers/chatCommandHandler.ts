@@ -20,6 +20,7 @@ export function chatCommandHandler<T extends HalloweenCommand>(
     interaction: APIApplicationCommandGuildInteraction,
   ): Promise<void> => {
     if (interaction.data.name.toLowerCase() !== command) {
+      // TODO: Error handling
       throw new Error(
         `Command Handler: Expected command "${command}", got "${interaction.data.name}"`,
       );
@@ -27,6 +28,7 @@ export function chatCommandHandler<T extends HalloweenCommand>(
     if (isGuildChatCommandInteraction(interaction)) {
       return handler(interaction);
     } else {
+      // TODO: Error handling
       throw new Error(
         `Command Handler: Expected CHAT command, got something else.`,
       );
