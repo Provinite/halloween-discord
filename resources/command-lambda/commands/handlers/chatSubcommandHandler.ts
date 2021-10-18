@@ -2,6 +2,8 @@ import {
   APIChatInputApplicationCommandGuildInteraction,
   ApplicationCommandInteractionDataOptionSubCommand,
 } from "discord-api-types/v9";
+import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
+import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 
 export type ChatSubcommandHandler = (
   subCommand: ApplicationCommandInteractionDataOptionSubCommand,
@@ -23,7 +25,7 @@ export function chatSubcommandHandler(
   }: { subCommandName: string; requiredPermissions: bigint | null },
   handlerFn: ChatSubcommandHandler,
 ): ChatSubcommandHandler {
-  return (subCommand, interaction) => {
+  return async (subCommand, interaction) => {
     if (subCommand.name !== subCommandName) {
       // TODO: Error handling
       throw new Error(
@@ -35,7 +37,12 @@ export function chatSubcommandHandler(
       const canUseCommand = perms & requiredPermissions;
       if (!canUseCommand) {
         // TODO: Error handling
-        throw new Error("You lack the requisite permissions for this command.");
+        await updateInteractionResponse(
+          await getClientCredentialsToken(),
+          interaction.token,
+          { content: "You lack the required permissions to use this command" },
+        );
+        return;
       }
     }
     return handlerFn(subCommand, interaction);
