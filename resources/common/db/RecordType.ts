@@ -20,8 +20,8 @@ export interface GuildSettings {
   guildId: string;
   resetTime: number;
   knocksPerDay: number;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
 export interface Migration {

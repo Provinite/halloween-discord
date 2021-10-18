@@ -1,3 +1,7 @@
+/**
+ * @module
+ * @description Lambda function for executing migrations.
+ */
 import { closeKnex } from "../common/db/client";
 import "pg";
 import { runMigrations } from "./lib/runMigrations";
@@ -9,6 +13,10 @@ let stats = {
   finished: 0,
   madeChanges: false,
 };
+/**
+ *
+ * @returns
+ */
 export const handler: () => Promise<{
   statusCode: number;
   migrationsFinished: number;

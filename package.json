@@ -10,7 +10,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy-test-commands": "DISCORD_APPLICATION_ID=$cchdiscord_discord_application_id DISCORD_CLIENT_SECRET=$cchdiscord_discord_client_secret TEST_GUILD_ID=$cchdiscord_test_guild_id ts-node bin/create-commands.ts"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.127.0",

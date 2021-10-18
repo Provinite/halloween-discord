@@ -6,7 +6,7 @@
  */
 import { KnockEvent, Prize } from "../../../common/db/RecordType";
 import { HalloweenTable } from "../../../common/db/TableName";
-import { stringButActually } from "../../../common/stringAs";
+import { stringButActually } from "../../../common/stringButActually";
 import { Migration } from "../Migration";
 
 export const createKnockEventTableMigration: Migration = {

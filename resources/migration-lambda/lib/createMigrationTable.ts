@@ -1,7 +1,7 @@
 import { knex } from "../../common/db/client";
 import { Migration } from "../../common/db/RecordType";
 import { HalloweenTable } from "../../common/db/TableName";
-import { stringButActually } from "../../common/stringAs";
+import { stringButActually } from "../../common/stringButActually";
 
 /**
  * Create the migration tracking table if it doesn't exist.

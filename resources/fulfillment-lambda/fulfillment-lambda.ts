@@ -1,11 +1,21 @@
+/**
+ * @module
+ * @description Lambda function for processing Fulfillment SQS
+ * messages. Selects a prize and notifies the user.
+ */
 import { SQSEvent } from "aws-lambda";
 import { getClientCredentialsToken } from "../common/discord/getClientCredentialsToken";
 import { updateInteractionResponse } from "../common/discord/updateInteractionResponse";
 import { FulfillmentMessageBody } from "../common/fulfillment/FulfillmentMessageBody";
+import { logger, LogLevel } from "../common/log";
 
+/**
+ * Lambda entry point
+ * @param event SQS event
+ */
 export const handler = async (event: SQSEvent): Promise<void> => {
   const logger = makeLogger();
-  logger.log("info", {
+  logger.log(LogLevel.Info, {
     message: `Started processing fulfillments`,
     recordCount: event.Records.length,
   });
@@ -16,7 +26,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
     let messageLogger = logger.makeLogger({
       sqsMessageId: record.messageId,
     });
-    messageLogger.log("info", {
+    messageLogger.log(LogLevel.Info, {
       message: `Processing fulfillment ${i++}`,
     });
     const body = JSON.parse(record.body) as FulfillmentMessageBody;
@@ -35,8 +45,8 @@ export const handler = async (event: SQSEvent): Promise<void> => {
 
 function makeLogger<T = Record<string, unknown>>(baseLog?: T) {
   return {
-    log: function <T>(level: "info" | "error", logObject: T) {
-      console[level](JSON.stringify({ ...baseLog, ...logObject }, null, 2));
+    log: function <T>(level: LogLevel, obj: T) {
+      logger[level]({ ...baseLog, ...obj });
     },
     makeLogger<T = Record<string, unknown>>(baseLogAdditions: T) {
       return makeLogger({ ...(baseLog || {}), ...baseLogAdditions });

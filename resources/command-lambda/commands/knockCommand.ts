@@ -1,9 +1,13 @@
+/**
+ * @module
+ * @description Handler for the /knock command
+ */
 import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
 import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
-import { HalloweenCommand } from "../HalloweenCommand";
-import { handlerFor } from "./handlerFor";
+import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
+import { chatCommandHandler } from "./handlers/chatCommandHandler";
 
-export const KnockCommand = handlerFor(
+export const knockCommand = chatCommandHandler(
   HalloweenCommand.Knock,
   async (interaction) => {
     const token = await getClientCredentialsToken();
