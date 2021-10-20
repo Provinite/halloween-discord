@@ -22,28 +22,32 @@ export type CommandLambdaEvent = {
 // TODO: Wrap handler in an error-handler that will
 // complete the interaction
 export const handler = async (event: CommandLambdaEvent): Promise<void> => {
-  logger.log({ event });
-  // TODO: Can we use the discord API to verify
-  // that the interaction is still ok?
-  const { body } = event;
-  if (isGuildInteraction(body)) {
-    const commandName = body.data.name.toLowerCase();
-    const commands = {
-      [HalloweenCommand.Knock]: knockCommand,
-      [HalloweenCommand.Info]: infoCommand,
-      [HalloweenCommand.Help]: helpCommand,
-      [HalloweenCommand.Prize]: prizeCommand,
-      [HalloweenCommand.Settings]: settingsCommand,
-    } as const;
+  try {
+    logger.log({ event });
+    // TODO: Can we use the discord API to verify
+    // that the interaction is still ok?
+    const { body } = event;
+    if (isGuildInteraction(body)) {
+      const commandName = body.data.name.toLowerCase();
+      const commands = {
+        [HalloweenCommand.Knock]: knockCommand,
+        [HalloweenCommand.Info]: infoCommand,
+        [HalloweenCommand.Help]: helpCommand,
+        [HalloweenCommand.Prize]: prizeCommand,
+        [HalloweenCommand.Settings]: settingsCommand,
+      } as const;
 
-    const handler = commands[commandName as HalloweenCommand];
-    if (!handler) {
-      const token = await getClientCredentialsToken();
-      await updateInteractionResponse(token, event.body.token, {
-        content: "Unknown command, use /help for details",
-      } as any);
-      return;
+      const handler = commands[commandName as HalloweenCommand];
+      if (!handler) {
+        const token = await getClientCredentialsToken();
+        await updateInteractionResponse(token, event.body.token, {
+          content: "Unknown command, use /help for details",
+        } as any);
+        return;
+      }
+      await handler(body);
     }
-    await handler(body);
+  } catch (error) {
+    logger.error({ error });
   }
 };
