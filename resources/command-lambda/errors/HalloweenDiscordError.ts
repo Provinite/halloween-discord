@@ -2,7 +2,7 @@ import {
   APIInteraction,
   RESTPatchAPIInteractionOriginalResponseJSONBody,
 } from "discord-api-types/v9";
-import { hexStringToInt } from "../../common/hexStringToInt";
+import { Color } from "../../common/Color";
 import { DiscordReportableError } from "./DiscordReportableError";
 
 export class HalloweenDiscordError extends DiscordReportableError {
@@ -40,7 +40,7 @@ export class HalloweenDiscordError extends DiscordReportableError {
               "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
           },
           timestamp: new Date().toISOString(),
-          color: hexStringToInt("FF0000"),
+          color: Color.Error,
           footer: {
             text: `Reference Code: ${interaction.id}`,
           },

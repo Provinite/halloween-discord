@@ -7,9 +7,9 @@ import { APIEmbed } from "discord-api-types/v9";
 import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 import { vagueNumberName } from "../../util/vagueNumberName";
-import { hexStringToInt } from "../../../common/hexStringToInt";
 import { randomElement } from "../../util/randomElement";
 import { prizeService } from "../../../common/db/prizeService";
+import { Color } from "../../../common/Color";
 
 const remainingSynonyms = [
   "remaining",
@@ -51,7 +51,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
           icon_url:
             "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
         },
-        color: hexStringToInt("EB6123"),
+        color: Color.Primary,
         title: "Cloverse Halloween 2021 - Prize List",
         timestamp: new Date().toISOString(),
         description:
