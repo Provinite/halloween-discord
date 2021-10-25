@@ -3,6 +3,7 @@ import {
   commandStructure,
   HalloweenCommand,
 } from "../../common/discord/HalloweenCommand";
+import { HalloweenDiscordError } from "../errors/HalloweenDiscordError";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
 import { ChatSubcommandHandler } from "./handlers/chatSubcommandHandler";
 import { addPrizeSubCommand } from "./prize/addPrizeSubCommand";
@@ -21,8 +22,12 @@ export const prizeCommand = chatCommandHandler(
   async (interaction) => {
     const { options } = interaction.data;
     if (!options || !options.length) {
-      // TODO: Error handling
-      return;
+      throw new HalloweenDiscordError({
+        thrownFrom: "prizeCommand",
+        message: "No subcommand provided",
+        interaction,
+        sourceError: new Error("Expected options on prize command, got none."),
+      });
     }
     let [subCommand] = options;
     let isAdminCommandGroup = false;
@@ -34,8 +39,15 @@ export const prizeCommand = chatCommandHandler(
       subCommand = subCommand.options[0];
     }
     if (subCommand.type !== ApplicationCommandOptionType.Subcommand) {
-      // TODO: Error handling
-      return;
+      throw new HalloweenDiscordError({
+        thrownFrom: "prizeCommand",
+        message:
+          "No subcommand provided. The prize command requires a subcommand",
+        interaction,
+        sourceError: new Error(
+          "Expected subcommand, but option was not of type subcommand",
+        ),
+      });
     }
     const subCommandName = subCommand.name.toLowerCase();
     const handler: ChatSubcommandHandler | undefined = (
@@ -44,8 +56,14 @@ export const prizeCommand = chatCommandHandler(
     if (handler) {
       await handler(subCommand, interaction);
     } else {
-      // TODO: Error handling
-      return;
+      throw new HalloweenDiscordError({
+        thrownFrom: "prizeCommand",
+        message: "Unknown prize sub command",
+        interaction,
+        sourceError: new Error(
+          `No handler found for prize subcommand ${subCommandName}`,
+        ),
+      });
     }
   },
 );

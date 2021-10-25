@@ -1,6 +1,3 @@
-import { knex } from "../../../common/db/client";
-import { Prize } from "../../../common/db/RecordType";
-import { HalloweenTable } from "../../../common/db/TableName";
 import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
 import {
   commandStructure,
@@ -12,30 +9,41 @@ import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 import { vagueNumberName } from "../../util/vagueNumberName";
 import { hexStringToInt } from "../../../common/hexStringToInt";
 import { randomElement } from "../../util/randomElement";
+import { prizeService } from "../../../common/db/prizeService";
 
 const remainingSynonyms = [
   "remaining",
   "left",
   "to go",
   "eagerly awaiting delivery",
-  "more to trick",
   "left to treat",
   "still to be won",
+  "still in the back room",
+  "left in the closet",
+  "tucked away under the cupboard",
+  "left in reserve",
+  "waiting for a home",
 ];
 
+/**
+ * Subcommand for listing all prizes.
+ * @example
+ * list
+ */
 export const listPrizesSubCommand = chatSubcommandHandler(
   {
     subCommandName: commandStructure[HalloweenCommand.Prize].List,
     requiredPermissions: null,
   },
   async (subCommand, interaction) => {
-    const prizes = await knex(HalloweenTable.Prize)
-      .select<Prize[]>("*")
-      .where({ guildId: interaction.guild_id })
-      .andWhere("currentStock", ">", 0);
+    const prizes = await prizeService.getPrizes((qb) =>
+      qb
+        .where({ guildId: interaction.guild_id })
+        .andWhere("currentStock", ">", 0),
+    );
 
     // TODO: Handling for > 25 prizes
-    // TODO: Probably showing images somehow?
+    // TODO: Probably showing at least some images somehow?
     const prizeEmbeds: APIEmbed[] = [
       {
         author: {
@@ -59,7 +67,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
       currentEmbed.fields!.push({
         name: prize.name,
         inline: true,
-        value: `${vagueNumberName(prize.currentStock)} ${randomElement(
+        value: `**${vagueNumberName(prize.currentStock)}** ${randomElement(
           remainingSynonyms,
         )}`,
       });

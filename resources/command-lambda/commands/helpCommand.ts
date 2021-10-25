@@ -15,6 +15,7 @@ export const helpCommand = chatCommandHandler(
     await updateInteractionResponse(token, interaction.token, {
       embeds: [
         {
+          // TODO: Common embed format
           author: {
             name: "Luther",
             icon_url:

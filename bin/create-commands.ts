@@ -1,3 +1,4 @@
+import { OAuth2Scopes } from "discord-api-types";
 import { isAxiosError } from "../resources/common/axios/isAxiosError";
 import { bulkWriteGuildCommands } from "../resources/common/discord/bulkWriteGuildCommands";
 import { commandDefinitions } from "../resources/common/discord/commandDefinitions";
@@ -11,14 +12,16 @@ if (!process.env.TEST_GUILD_ID) {
 const testGuildId = process.env.TEST_GUILD_ID;
 
 (async function () {
-  const token = await getClientCredentialsToken();
+  const token = await getClientCredentialsToken([
+    OAuth2Scopes.ApplicationsCommandsUpdate,
+  ]);
   try {
     await bulkWriteGuildCommands(
       token,
       testGuildId,
       Object.values(commandDefinitions),
     );
-  } catch (err) {
+  } catch (err: any) {
     if (isAxiosError(err)) {
       logger.error({
         message: `Failed communicating with the discord API (${err.name}): ${err.message}`,
@@ -27,6 +30,12 @@ const testGuildId = process.env.TEST_GUILD_ID;
         requestBody: err.config.data,
       });
       logger.error((err.response?.data as any).errors);
+      throw err;
+    } else {
+      logger.error({
+        error: err,
+        stack: err?.stack,
+      });
       throw err;
     }
   }

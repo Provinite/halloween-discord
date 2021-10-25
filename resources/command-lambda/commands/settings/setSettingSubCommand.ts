@@ -13,7 +13,9 @@ import {
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
 import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
+import { ValidationError } from "../../../common/errors/ValidationError";
 import { isKeyOf } from "../../../common/isKeyOf";
+import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 
 /**
@@ -35,8 +37,14 @@ export const setSettingsSubCommand = chatSubcommandHandler(
       fieldOption.type !== ApplicationCommandOptionType.String ||
       valueOption.type !== ApplicationCommandOptionType.String
     ) {
-      // TODO: Error handling
-      return;
+      throw new HalloweenDiscordError({
+        thrownFrom: "setSettingsSubCommand",
+        message:
+          "Invalid subcommand options. Missing setting or value string options",
+        sourceError: new Error(
+          "Invalid subcommand options, 'setting' and 'value' not both found or not both string options",
+        ),
+      });
     }
 
     interface Field<K extends keyof GuildSettings> {
@@ -80,8 +88,12 @@ export const setSettingsSubCommand = chatSubcommandHandler(
 
     const selectedField = fieldOption.value;
     if (!isKeyOf(selectedField, fieldMap)) {
-      // TODO: Error handling
-      return;
+      throw new ValidationError({
+        thrownFrom: "setSettingsSubCommand",
+        message: `Invalid field: "${selectedField}"`,
+        sourceError: new Error(`Unknown setting: ${selectedField}`),
+        validationErrors: [{ field: "setting", error: `Unknown setting` }],
+      });
     }
 
     const updateField = fieldMap[selectedField];

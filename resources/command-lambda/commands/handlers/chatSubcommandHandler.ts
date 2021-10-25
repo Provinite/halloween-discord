@@ -2,8 +2,7 @@ import {
   APIChatInputApplicationCommandGuildInteraction,
   ApplicationCommandInteractionDataOptionSubCommand,
 } from "discord-api-types/v9";
-import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
-import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
+import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
 
 export type ChatSubcommandHandler = (
   subCommand: ApplicationCommandInteractionDataOptionSubCommand,
@@ -27,22 +26,27 @@ export function chatSubcommandHandler(
 ): ChatSubcommandHandler {
   return async (subCommand, interaction) => {
     if (subCommand.name !== subCommandName) {
-      // TODO: Error handling
-      throw new Error(
-        `SubCommand Handler: Expected subcommand "${subCommandName}" got "${subCommand.name}"`,
-      );
+      throw new HalloweenDiscordError({
+        thrownFrom: `chatSubcommandHandler`,
+        message: `Something went wrong while handling your interaction. ERR_UNEXPECTED_SUBCOMMAND`,
+        interaction,
+        sourceError: new Error(
+          `Received unexpected command in ${subCommandName} chat subcommand handler. Command ${interaction.data.name} -> ${subCommand.name} was routed mistakenly to it.`,
+        ),
+      });
     }
     if (requiredPermissions !== null) {
       const perms = BigInt(interaction.member.permissions);
       const canUseCommand = perms & requiredPermissions;
       if (!canUseCommand) {
-        // TODO: Error handling
-        await updateInteractionResponse(
-          await getClientCredentialsToken(),
-          interaction.token,
-          { content: "You lack the required permissions to use this command" },
-        );
-        return;
+        throw new HalloweenDiscordError({
+          thrownFrom: "chatSubcommandHandler",
+          message: "You lack the required permissions for that command.",
+          interaction,
+          sourceError: new Error(
+            `Invalid permissions when attempting to process command ${subCommandName}`,
+          ),
+        });
       }
     }
     return handlerFn(subCommand, interaction);

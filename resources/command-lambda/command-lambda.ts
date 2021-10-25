@@ -15,39 +15,43 @@ import { updateInteractionResponse } from "../common/discord/updateInteractionRe
 import { logger } from "../common/log";
 import { prizeCommand } from "./commands/prizeCommand";
 import { settingsCommand } from "./commands/settingsCommand";
+import { interactionContext } from "../common/discord/interactionContext";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
 };
 // TODO: Wrap handler in an error-handler that will
 // complete the interaction
-export const handler = async (event: CommandLambdaEvent): Promise<void> => {
-  try {
-    logger.log({ event });
-    // TODO: Can we use the discord API to verify
-    // that the interaction is still ok?
-    const { body } = event;
-    if (isGuildInteraction(body)) {
-      const commandName = body.data.name.toLowerCase();
-      const commands = {
-        [HalloweenCommand.Knock]: knockCommand,
-        [HalloweenCommand.Info]: infoCommand,
-        [HalloweenCommand.Help]: helpCommand,
-        [HalloweenCommand.Prize]: prizeCommand,
-        [HalloweenCommand.Settings]: settingsCommand,
-      } as const;
 
-      const handler = commands[commandName as HalloweenCommand];
-      if (!handler) {
-        const token = await getClientCredentialsToken();
-        await updateInteractionResponse(token, event.body.token, {
-          content: "Unknown command, use /help for details",
-        } as any);
-        return;
+export const handler = async (event: CommandLambdaEvent): Promise<void> => {
+  await interactionContext.run(event.body, async () => {
+    try {
+      logger.log({ event });
+      // TODO: Can we use the discord API to verify
+      // that the interaction is still ok?
+      const { body } = event;
+      if (isGuildInteraction(body)) {
+        const commandName = body.data.name.toLowerCase();
+        const commands = {
+          [HalloweenCommand.Knock]: knockCommand,
+          [HalloweenCommand.Info]: infoCommand,
+          [HalloweenCommand.Help]: helpCommand,
+          [HalloweenCommand.Prize]: prizeCommand,
+          [HalloweenCommand.Settings]: settingsCommand,
+        } as const;
+
+        const handler = commands[commandName as HalloweenCommand];
+        if (!handler) {
+          const token = await getClientCredentialsToken();
+          await updateInteractionResponse(token, event.body.token, {
+            content: "Unknown command, use /help for details",
+          } as any);
+          return;
+        }
+        await handler(body);
       }
-      await handler(body);
+    } catch (error) {
+      logger.error({ error });
     }
-  } catch (error) {
-    logger.error({ error });
-  }
+  });
 };
