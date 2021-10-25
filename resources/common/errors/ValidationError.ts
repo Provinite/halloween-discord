@@ -43,10 +43,16 @@ export class ValidationError extends DiscordReportableError {
         {
           title: "Cloverse Halloween 2021 - Validation failed",
           description: this.config.message,
-          fields: this.config.validationErrors.map((error) => ({
-            name: error.field,
-            value: error.error,
-          })),
+          fields: [
+            ...this.config.validationErrors.map((error) => ({
+              name: error.field,
+              value: error.error,
+            })),
+            {
+              name: "Reference ID",
+              value: this.getInteraction().id,
+            },
+          ],
         },
       ],
     };

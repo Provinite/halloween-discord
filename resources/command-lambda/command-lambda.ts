@@ -16,6 +16,7 @@ import { logger } from "../common/log";
 import { prizeCommand } from "./commands/prizeCommand";
 import { settingsCommand } from "./commands/settingsCommand";
 import { interactionContext } from "../common/discord/interactionContext";
+import { errorHandler } from "./commands/errorHandler";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
@@ -51,7 +52,7 @@ export const handler = async (event: CommandLambdaEvent): Promise<void> => {
         await handler(body);
       }
     } catch (error) {
-      logger.error({ error });
+      await errorHandler(error as Error);
     }
   });
 };

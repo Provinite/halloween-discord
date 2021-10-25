@@ -51,6 +51,10 @@ export class HalloweenDiscordError extends DiscordReportableError {
               name: "Message",
               value: message,
             },
+            {
+              name: "Reference ID",
+              value: interaction.id,
+            },
           ],
         },
       ],

@@ -12,7 +12,7 @@ export class DiscordReportableError extends Error {
     if (!this.config.body) {
       return {
         content:
-          "Something went wrong. Also, something went wrong while trying to tell you what went wrong. This is awkward. Ref:" +
+          "Something went wrong. Also, something went wrong while trying to tell you what went wrong. This is awkward. Reference ID: " +
           this.getInteraction().id,
       };
     }
