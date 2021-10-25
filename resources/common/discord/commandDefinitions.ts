@@ -34,6 +34,14 @@ export const commandDefinitions: Record<
     type: ApplicationCommandType.ChatInput,
   },
   /**
+   * /credits
+   */
+  [HalloweenCommand.Credits]: {
+    name: "credits",
+    description: "Get event credits",
+    type: ApplicationCommandType.ChatInput,
+  },
+  /**
    * /settings list
    * /settings set $setting $value
    */

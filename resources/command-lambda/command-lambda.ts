@@ -15,6 +15,7 @@ import { updateInteractionResponse } from "../common/discord/updateInteractionRe
 import { logger } from "../common/log";
 import { prizeCommand } from "./commands/prizeCommand";
 import { settingsCommand } from "./commands/settingsCommand";
+import { creditsCommand } from "./commands/creditsCommand";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
@@ -35,6 +36,7 @@ export const handler = async (event: CommandLambdaEvent): Promise<void> => {
         [HalloweenCommand.Help]: helpCommand,
         [HalloweenCommand.Prize]: prizeCommand,
         [HalloweenCommand.Settings]: settingsCommand,
+        [HalloweenCommand.Credits]: creditsCommand,
       } as const;
 
       const handler = commands[commandName as HalloweenCommand];
