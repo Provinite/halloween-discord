@@ -10,6 +10,7 @@ import { updateInteractionResponse } from "../../../common/discord/updateInterac
 import { isKeyOf } from "../../../common/isKeyOf";
 import { DiscordReportableError } from "../../errors/DiscordReportableError";
 import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
+import { commandLambdaLogger } from "../../util/commandLambdaLogger";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 
 /**
@@ -139,6 +140,7 @@ export const addPrizeSubCommand = chatSubcommandHandler(
       prize.weight = 10;
     }
     try {
+      commandLambdaLogger.info({ message: "Adding prize", prize });
       prize = await prizeService.savePrize(prize);
     } catch (err) {
       if (err instanceof DiscordReportableError) {

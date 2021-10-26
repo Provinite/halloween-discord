@@ -8,13 +8,14 @@ import { hexStringToInt } from "../../common/hexStringToInt";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
 import { APIEmbedField } from "discord-api-types";
+import { commandLambdaLogger } from "../util/commandLambdaLogger";
 
 export const creditsCommand = chatCommandHandler(
   HalloweenCommand.Credits,
   async (interaction) => {
     const token = await getClientCredentialsToken();
 
-    let credits = [
+    const credits = [
       { name: "A2J", credit: "Biiiig brains" },
       { name: "Provinite", credit: "OK brains, biiiiig attitude" },
       {
@@ -26,9 +27,9 @@ export const creditsCommand = chatCommandHandler(
     /**
      * Array for dynamic credit generation. Every third element should be our special "empty" inline element.
      */
-    let fields: APIEmbedField[] = [];
+    const fields: APIEmbedField[] = [];
     for (let i = 0; i < credits.length; i++) {
-      let field: APIEmbedField = {
+      const field: APIEmbedField = {
         name: credits[i].name,
         value: credits[i].credit,
         inline: true,
@@ -38,6 +39,10 @@ export const creditsCommand = chatCommandHandler(
         fields.push({ name: "\u200B", value: "\u200B", inline: true });
       }
     }
+
+    commandLambdaLogger.info({
+      message: "Sending credits response",
+    });
 
     await updateInteractionResponse(token, interaction.token, {
       embeds: [

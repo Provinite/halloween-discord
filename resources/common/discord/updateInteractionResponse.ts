@@ -5,7 +5,7 @@ import {
 } from "discord-api-types/v9";
 import { isAxiosError } from "../axios/isAxiosError";
 import { envService } from "../envService";
-import { logger } from "../log";
+import { logger } from "../Logger";
 
 /**
  * @see https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response

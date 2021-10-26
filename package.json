@@ -41,6 +41,7 @@
     "@aws-cdk/core": "1.127.0",
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.1004.0",
+    "aws-xray-sdk-core": "^3.3.3",
     "axios": "^0.22.0",
     "http-errors": "^1.8.0",
     "knex": "^0.95.11",

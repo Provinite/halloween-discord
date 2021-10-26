@@ -138,7 +138,7 @@ export class HalloweenDiscordService extends Construct {
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
         NODE_OPTIONS: "--enable-source-maps",
       },
-      tracing: Tracing.PASS_THROUGH,
+      tracing: Tracing.ACTIVE,
     });
 
     this.interactionLambda = new NodejsFunction(

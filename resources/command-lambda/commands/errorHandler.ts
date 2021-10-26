@@ -2,14 +2,14 @@ import { APIInteraction } from "discord-api-types/v9";
 import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
 import { getInteractionContextOrDie } from "../../common/discord/interactionContext";
 import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
-import { logger } from "../../common/log";
 import { DiscordReportableError } from "../errors/DiscordReportableError";
+import { commandLambdaLogger } from "../util/commandLambdaLogger";
 
 export const errorHandler = async (
   error: Error,
   interaction: APIInteraction = getInteractionContextOrDie(),
 ): Promise<void> => {
-  logger.error({
+  commandLambdaLogger.error({
     message: "Error processing command",
     error,
     interaction,

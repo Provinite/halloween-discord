@@ -1,4 +1,4 @@
-import { logger } from "../../common/log";
+import { logger } from "../../common/Logger";
 import migrations from "./migrations";
 import { runMigration } from "./runMigration";
 import { shouldRunMigration } from "./shouldRunMigration";
@@ -19,11 +19,11 @@ export async function runMigrations(
   let migrationCount = 1;
   stats.total = migrations.length;
 
-  logger.log(`Starting migrations. [${stats.total}]`);
+  logger.info(`Starting migrations. [${stats.total}]`);
 
   for (const migration of migrations) {
     const logPrefix = `[${migrationCount}/${migrations.length}:${migration.id}]: `;
-    const log = (msg: string) => logger.log(`${logPrefix}${msg}`);
+    const log = (msg: string) => logger.info(`${logPrefix}${msg}`);
 
     if (await shouldRunMigration(migration)) {
       log(`Running migration`);

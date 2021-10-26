@@ -1,4 +1,4 @@
-import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { getHeader } from "./getHeader";
 import { SignatureHeaders } from "./SignatureHeaders";
 import { apiGatewayResult } from "../common/lambda/apiGatewayResult";
@@ -16,18 +16,29 @@ import { parseBody } from "../common/lambda/parseBody";
 import { isApplicationCommandInteraction } from "./discord/isApplicationCommandInteraction";
 import { Lambda } from "aws-sdk";
 import { envService } from "../common/envService";
+import { logger } from "../common/Logger";
+import { captureAWSClient } from "aws-xray-sdk-core";
+const lambda = captureAWSClient(new Lambda());
 
-const lambda = new Lambda();
-
-export const handler: APIGatewayProxyHandler = async (
-  event,
+const actualHandler = async (
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  logger.info({
+    source: "interaction-lambda",
+    message: "Lambda invoked",
+    event,
+    timestamp: new Date().toISOString(),
+  });
+
   const signature = getHeader(event.headers, SignatureHeaders.Signature);
   const timestamp = getHeader(event.headers, SignatureHeaders.Timestamp);
   const rawBody = event.body || "";
 
   // Verify signature
   if (!verifyDiscordInteraction(timestamp, rawBody, signature)) {
+    logger.error({
+      message: "Invalid request signature",
+    });
     return apiGatewayResult({
       statusCode: 401,
       body: {
@@ -60,7 +71,6 @@ export const handler: APIGatewayProxyHandler = async (
       await lambda
         .invoke({
           FunctionName: envService.getCommandLambdaArn(),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           Payload: JSON.stringify({ body }),
           InvocationType: "Event",
         })
@@ -97,5 +107,25 @@ export const handler: APIGatewayProxyHandler = async (
         },
       },
     });
+  }
+};
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
+  try {
+    const result = await actualHandler(event);
+    logger.info({
+      source: "interaction-lambda",
+      message: "Lambda completed",
+      result,
+    });
+    return result;
+  } catch (err) {
+    logger.error({
+      message: "Error during invocation",
+      error: err,
+    });
+    throw err;
   }
 };

@@ -4,7 +4,7 @@ import { RESTPostOAuth2ClientCredentialsResult } from "discord-api-types/rest/v9
 import { URLSearchParams } from "url";
 import { isAxiosError } from "../axios/isAxiosError";
 import { envService } from "../envService";
-import { logger } from "../log";
+import { logger } from "../Logger";
 
 // PERF: Reusing tokens would be smart. Maybe through SSM?
 // At the very least, store it for warm invocations

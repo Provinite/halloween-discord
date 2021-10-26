@@ -3,7 +3,7 @@ import { isAxiosError } from "../resources/common/axios/isAxiosError";
 import { bulkWriteGuildCommands } from "../resources/common/discord/bulkWriteGuildCommands";
 import { commandDefinitions } from "../resources/common/discord/commandDefinitions";
 import { getClientCredentialsToken } from "../resources/common/discord/getClientCredentialsToken";
-import { logger } from "../resources/common/log";
+import { logger } from "../resources/common/Logger";
 
 if (!process.env.TEST_GUILD_ID) {
   throw new Error("Must set cchdiscord_test_guild_id");
