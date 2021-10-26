@@ -23,6 +23,10 @@ export enum HalloweenCommand {
    * Compound command for managing event settings
    */
   Settings = "settings",
+  /**
+   * Command to get event credits
+   */
+  Credits = "credits",
 }
 
 export const commandStructure = {
