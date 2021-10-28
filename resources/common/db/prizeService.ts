@@ -17,8 +17,9 @@ export type PrizeQueryModifier = (
 export const prizeService = {
   async getPrizes(
     modifyQuery: PrizeQueryModifier = (qb) => qb,
+    tx = knex(),
   ): Promise<Prize[]> {
-    let queryBuilder = knex()<Prize>(HalloweenTable.Prize).select("*");
+    let queryBuilder = tx<Prize>(HalloweenTable.Prize).select("*");
     queryBuilder = modifyQuery(queryBuilder);
     return await queryBuilder;
   },
@@ -112,5 +113,29 @@ export const prizeService = {
         error,
       }));
     }
+  },
+
+  async decrementStock(
+    prizeId: Prize["id"],
+    guildId: string,
+    tx = knex(),
+  ): Promise<Prize> {
+    const prizes = await prizeService.getPrizes(
+      (qb) => qb.where("id", prizeId),
+      tx,
+    );
+    if (!prizes.length || prizes[0].currentStock === 0) {
+      // TODO: error handling
+      throw new Error(`No in-stock prize with id ${prizeId}`);
+    }
+    const [result] = await tx<Prize>(HalloweenTable.Prize)
+      .update(
+        {
+          currentStock: tx.raw(`"currentStock" - 1`),
+        },
+        "*",
+      )
+      .where({ id: prizeId, guildId: guildId });
+    return result;
   },
 };

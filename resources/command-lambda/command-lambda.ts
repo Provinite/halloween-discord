@@ -17,6 +17,7 @@ import { errorHandler } from "./commands/errorHandler";
 import { creditsCommand } from "./commands/creditsCommand";
 import { commandLambdaLogger } from "./util/commandLambdaLogger";
 import { HalloweenDiscordError } from "./errors/HalloweenDiscordError";
+import { closeKnex } from "../common/db/client";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
@@ -57,6 +58,8 @@ export const handler = async (event: CommandLambdaEvent): Promise<void> => {
       }
     } catch (error) {
       await errorHandler(error as Error);
+    } finally {
+      await closeKnex();
     }
   });
 };

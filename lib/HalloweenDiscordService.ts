@@ -84,7 +84,7 @@ export class HalloweenDiscordService extends Construct {
      * Grants
      */
     // SQS access
-    this.fulfillmentQueue.grantSendMessages(this.interactionLambda);
+    this.fulfillmentQueue.grantSendMessages(this.commandLambda);
     // Lambda access
     this.commandLambda.grantInvoke(this.interactionLambda);
 
@@ -139,6 +139,7 @@ export class HalloweenDiscordService extends Construct {
         NODE_OPTIONS: "--enable-source-maps",
       },
       tracing: Tracing.ACTIVE,
+      timeout: Duration.seconds(30),
     });
 
     this.interactionLambda = new NodejsFunction(

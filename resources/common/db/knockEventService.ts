@@ -1,9 +1,10 @@
 import { Knex } from "knex";
-import { KnockEvent } from "./RecordType";
+import { KnockEvent, Prize } from "./RecordType";
 import { HalloweenTable } from "./TableName";
 import { knex } from "./client";
 import { ValidationError } from "../errors/ValidationError";
 import { SetOptional } from "type-fest";
+import { DiscordReportableError } from "../../command-lambda/errors/DiscordReportableError";
 
 /**
  * Callback to modify the query. Useful for adding where clauses etc
@@ -13,8 +14,57 @@ export type KnockEventQueryModifier = (
 ) => Knex.QueryBuilder<KnockEvent, KnockEvent[]>;
 
 export const knockEventService = {
-  async getKnockEvents(modifyQuery: KnockEventQueryModifier = (qb) => qb) {
-    return modifyQuery(knex(HalloweenTable.KnockEvent).select("*"));
+  async getKnockEvents(
+    modifyQuery: KnockEventQueryModifier = (qb) => qb,
+    tx = knex(),
+  ) {
+    return modifyQuery(tx(HalloweenTable.KnockEvent).select("*"));
+  },
+  /**
+   * Adds a prize to a pending knock event and marks it as no longer pending
+   * @param knockEvent
+   * @param prize
+   */
+  async fulfillPendingKnockEvent(
+    knockEventId: KnockEvent["id"],
+    prizeId: Prize["id"] | null,
+    tx = knex(),
+  ): Promise<KnockEvent> {
+    const knockEvents = await knockEventService.getKnockEvents(
+      (qb) =>
+        qb.where({
+          id: knockEventId,
+          isPending: true,
+        }),
+      tx,
+    );
+    if (!knockEvents.length) {
+      throw new DiscordReportableError(
+        "Knock event not found during fulfillment",
+        {
+          errorsLambda: true,
+          message:
+            "Knock event not found during fulfillment. Something went wrong trying to get you a prize. Contact staff",
+          name: "KnockEventNotFound",
+          sourceError: new Error(
+            `No knock event found with { id: ${knockEventId}, isPending: true }`,
+          ),
+          thrownFrom: "knockEventService",
+        },
+      );
+    }
+    const [result] = await tx<KnockEvent, KnockEvent[]>(
+      HalloweenTable.KnockEvent,
+    )
+      .update(
+        {
+          isPending: false,
+          prizeId: prizeId,
+        },
+        "*",
+      )
+      .where({ id: knockEventId });
+    return result;
   },
   async saveKnockEvent(
     knockEvent: SetOptional<Omit<KnockEvent, "id" | "time">, "isPending">,

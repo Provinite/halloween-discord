@@ -10,7 +10,6 @@ export async function sendFulfillmentMessage(
 ): Promise<void> {
   const sqs = captureAWSClient(new SQS());
   const messageBody: FulfillmentMessageBody = {
-    token: interaction.token,
     interaction,
     timestamp: moment().unix(),
     knockEventId,
@@ -27,7 +26,6 @@ export async function sendFulfillmentMessage(
 
 export interface FulfillmentMessageBody {
   knockEventId: KnockEvent["id"];
-  token: string;
   interaction: APIChatInputApplicationCommandGuildInteraction;
   timestamp: number;
 }

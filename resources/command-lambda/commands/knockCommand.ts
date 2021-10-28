@@ -16,7 +16,6 @@ import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbe
 import { Color } from "../../common/Color";
 import { sendFulfillmentMessage } from "../util/sendFulfillmentMessage";
 import { commandLambdaLogger } from "../util/commandLambdaLogger";
-import { knex } from "../../common/db/client";
 
 export const knockCommand = chatCommandHandler(
   HalloweenCommand.Knock,
@@ -30,7 +29,7 @@ export const knockCommand = chatCommandHandler(
     const token = await getClientCredentialsToken();
     const settings = await guildSettingsService.getGuildSettings(guildId);
     // 1. Check if the event is running
-    if (!settings.startDate || settings.startDate < new Date()) {
+    if (!settings.startDate || settings.startDate > new Date()) {
       throw new EventNotStartedError({
         sourceError: new Error(`Event not yet started`),
         thrownFrom: "knockCommand",
@@ -64,49 +63,49 @@ export const knockCommand = chatCommandHandler(
     }
 
     // 3. Roll for a win
-    await knex().transaction(async (tx) => {
-      if (randomFloat() > winRate) {
-        await knockEventService.saveKnockEvent(
-          {
-            guildId,
-            userId,
-            prizeId: null,
-          },
-          tx,
-        );
-        await updateInteractionResponse(token, interaction.token, {
-          embeds: [
-            {
-              title: "No one was home",
-              description:
-                "You knocked and knocked but no one was home. Tricks this time.",
-              author: getDiscordEmbedAuthor(),
-              timestamp: getDiscordEmbedTimestamp(),
-              color: Color.Primary,
-              footer: {
-                text: "Come back soon!",
-              },
-            },
-          ],
-        });
-      } else {
-        // This is a win, save a partial knock event and send a message to the fulfillment queue
-        const result = await knockEventService.saveKnockEvent(
-          {
-            guildId,
-            userId,
-            prizeId: null,
-            isPending: true,
-          },
-          tx,
-        );
-        await sendFulfillmentMessage(interaction, result.id);
-        commandLambdaLogger.info({
-          message: `Sent fulfillment message for knock event ${result.id}`,
-          knockEventId: result.id,
-          interactionId: interaction.id,
-        });
-      }
+    const roll = randomFloat();
+    commandLambdaLogger.info({
+      winRate,
+      roll,
+      userId,
+      guildId,
+      win: roll <= winRate,
     });
+    if (randomFloat() > winRate) {
+      await knockEventService.saveKnockEvent({
+        guildId,
+        userId,
+        prizeId: null,
+      });
+      await updateInteractionResponse(token, interaction.token, {
+        embeds: [
+          {
+            title: "No one was home",
+            description:
+              "You knocked and knocked but no one was home. Tricks this time.",
+            author: getDiscordEmbedAuthor(),
+            timestamp: getDiscordEmbedTimestamp(),
+            color: Color.Primary,
+            footer: {
+              text: "Come back soon!",
+            },
+          },
+        ],
+      });
+    } else {
+      // This is a win, save a partial knock event and send a message to the fulfillment queue
+      const result = await knockEventService.saveKnockEvent({
+        guildId,
+        userId,
+        prizeId: null,
+        isPending: true,
+      });
+      await sendFulfillmentMessage(interaction, result.id);
+      commandLambdaLogger.info({
+        message: `Sent fulfillment message for knock event ${result.id}`,
+        knockEventId: result.id,
+        interactionId: interaction.id,
+      });
+    }
   },
 );
