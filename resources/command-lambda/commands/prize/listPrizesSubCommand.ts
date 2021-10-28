@@ -10,6 +10,7 @@ import { vagueNumberName } from "../../util/vagueNumberName";
 import { randomElement } from "../../util/randomElement";
 import { prizeService } from "../../../common/db/prizeService";
 import { Color } from "../../../common/Color";
+import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
 
 const remainingSynonyms = [
   "remaining",
@@ -53,7 +54,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
         },
         color: Color.Primary,
         title: "Cloverse Halloween 2021 - Prize List",
-        timestamp: new Date().toISOString(),
+        timestamp: getDiscordEmbedTimestamp(),
         description:
           "These are the remaining prizes still to go for the event." +
           " Each prize has a different stock and likelyhood of" +

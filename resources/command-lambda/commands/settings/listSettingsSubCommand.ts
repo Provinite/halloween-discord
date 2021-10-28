@@ -6,6 +6,7 @@ import {
   commandStructure,
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
+import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
 import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 
@@ -40,7 +41,7 @@ export const listSettingsSubCommand = chatSubcommandHandler(
         embeds: [
           {
             title: "[Admin] Event Settings",
-            timestamp: new Date().toISOString(),
+            timestamp: getDiscordEmbedTimestamp(),
             fields: [
               {
                 name: "Reset Time (0=midnight-23=11pm) (US Central Daylight Time)",
@@ -49,6 +50,11 @@ export const listSettingsSubCommand = chatSubcommandHandler(
               {
                 name: "Knocks Per Day",
                 value: settings.knocksPerDay.toString(),
+                inline: true,
+              },
+              {
+                name: "Win Rate",
+                value: settings.winRate.toString(),
                 inline: true,
               },
               {

@@ -7,6 +7,7 @@ import { updateInteractionResponse } from "../../common/discord/updateInteractio
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
 import { Color } from "../../common/Color";
+import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
 
 export const helpCommand = chatCommandHandler(
   HalloweenCommand.Help,
@@ -23,7 +24,7 @@ export const helpCommand = chatCommandHandler(
           },
           color: Color.Primary,
           title: "Cloverse Halloween 2021 - How to Participate",
-          timestamp: new Date().toISOString(),
+          timestamp: getDiscordEmbedTimestamp(),
           fields: [
             {
               name: "Trick or Treat",

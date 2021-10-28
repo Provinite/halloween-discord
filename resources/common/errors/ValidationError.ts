@@ -1,12 +1,13 @@
 import {
   APIInteraction,
   RESTPatchAPIInteractionOriginalResponseJSONBody,
-} from "discord-api-types";
+} from "discord-api-types/v9";
 import {
   DiscordReportableError,
   DiscordReportableErrorConfig,
 } from "../../command-lambda/errors/DiscordReportableError";
 import { Color } from "../Color";
+import { getDiscordEmbedTimestamp } from "../discord/ui/getDiscordEmbedTimestamp";
 
 export interface ValidationFieldError {
   field: string;
@@ -49,7 +50,7 @@ export class ValidationError extends DiscordReportableError {
             value: error.error,
           })),
           color: Color.Error,
-          timestamp: new Date().toISOString(),
+          timestamp: getDiscordEmbedTimestamp(),
           footer: {
             text: `Need Help? Contact staff with reference id: ${
               this.getInteraction().id

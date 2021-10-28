@@ -10,9 +10,10 @@ export const errorHandler = async (
   interaction: APIInteraction = getInteractionContextOrDie(),
 ): Promise<void> => {
   commandLambdaLogger.error({
-    message: "Error processing command",
+    message: "Error processing command: " + error.message,
     error,
     interaction,
+    sourceError: "sourceError" in error ? (error as any).sourceError : null,
   });
   if (error instanceof DiscordReportableError) {
     await updateInteractionResponse(

@@ -1,4 +1,4 @@
-import { OAuth2Scopes } from "discord-api-types";
+import { OAuth2Scopes } from "discord-api-types/v9";
 import { isAxiosError } from "../resources/common/axios/isAxiosError";
 import { bulkWriteGuildCommands } from "../resources/common/discord/bulkWriteGuildCommands";
 import { commandDefinitions } from "../resources/common/discord/commandDefinitions";

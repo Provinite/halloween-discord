@@ -84,6 +84,12 @@ export const setSettingsSubCommand = chatSubcommandHandler(
         validate: (s) => /^([0-9]|1[0-9]|2[0-3])$/.test(s),
         transform: (s) => Number.parseInt(s, 10),
       }),
+      win_rate: field({
+        field: "winRate",
+        // a float
+        validate: (s) => /^[0-9]*(\.[0-9]+)?$/.test(s),
+        transform: (s) => Number.parseFloat(s),
+      }),
     } as const;
 
     const selectedField = fieldOption.value;

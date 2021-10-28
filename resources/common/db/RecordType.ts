@@ -5,7 +5,8 @@ export interface KnockEvent {
   guildId: string;
   userId: string;
   time: Date;
-  prizeId: string;
+  prizeId: string | null;
+  isPending: boolean;
 }
 export interface Prize {
   id: string;
@@ -22,6 +23,7 @@ export interface GuildSettings {
   knocksPerDay: number;
   startDate: Date | null;
   endDate: Date | null;
+  winRate: number;
 }
 
 export interface Migration {

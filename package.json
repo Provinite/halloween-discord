@@ -29,7 +29,8 @@
     "jest": "^26.4.2",
     "prettier": "^2.4.1",
     "ts-jest": "^26.2.0",
-    "ts-node": "^9.0.0"
+    "ts-node": "^9.0.0",
+    "type-fest": "^2.5.2"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.127.0",
@@ -45,6 +46,8 @@
     "axios": "^0.22.0",
     "http-errors": "^1.8.0",
     "knex": "^0.95.11",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.33",
     "pg": "^8.7.1",
     "pg-native": "^3.0.0",
     "pg-query-stream": "^4.2.1",

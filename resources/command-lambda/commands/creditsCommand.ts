@@ -7,8 +7,9 @@ import { updateInteractionResponse } from "../../common/discord/updateInteractio
 import { hexStringToInt } from "../../common/hexStringToInt";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
-import { APIEmbedField } from "discord-api-types";
+import { APIEmbedField } from "discord-api-types/v9";
 import { commandLambdaLogger } from "../util/commandLambdaLogger";
+import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
 
 export const creditsCommand = chatCommandHandler(
   HalloweenCommand.Credits,
@@ -54,7 +55,7 @@ export const creditsCommand = chatCommandHandler(
           },
           color: hexStringToInt("EB6123"),
           title: "Cloverse Halloween 2021 - Credits",
-          timestamp: new Date().toISOString(),
+          timestamp: getDiscordEmbedTimestamp(),
           fields,
         },
       ],

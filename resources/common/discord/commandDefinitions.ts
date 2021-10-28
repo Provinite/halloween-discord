@@ -78,6 +78,10 @@ export const commandDefinitions: Record<
                 name: "End Date",
                 value: "end_date",
               },
+              {
+                name: "Win Rate",
+                value: "win_rate",
+              },
             ],
             required: true,
           },

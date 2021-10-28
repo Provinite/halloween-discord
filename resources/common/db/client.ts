@@ -12,7 +12,7 @@ export function knex(): TypedKnex<Knex>;
 export function knex<T extends HalloweenTable>(
   tableName: T,
   instance?: Knex,
-): Knex.QueryBuilder<RecordType<T>>;
+): Knex.QueryBuilder<RecordType<T>, RecordType<T>[]>;
 export function knex<T extends HalloweenTable>(
   tableName?: T,
   instance?: Knex,

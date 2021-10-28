@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "async_hooks";
-import { APIInteraction } from "discord-api-types";
+import { APIInteraction } from "discord-api-types/v9";
 export const interactionContext = new AsyncLocalStorage<APIInteraction>();
 export function getInteractionContextOrDie(): APIInteraction {
   const result = interactionContext.getStore();

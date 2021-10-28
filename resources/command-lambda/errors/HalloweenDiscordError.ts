@@ -3,6 +3,9 @@ import {
   RESTPatchAPIInteractionOriginalResponseJSONBody,
 } from "discord-api-types/v9";
 import { Color } from "../../common/Color";
+import { getDiscordEmbedAuthor } from "../../common/discord/ui/getDiscordEmbedAuthor";
+import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
+import { getErrorDiscordEmbedFooter } from "../../common/errors/util/getErrorDiscordEmbedFooter";
 import { DiscordReportableError } from "./DiscordReportableError";
 
 export class HalloweenDiscordError extends DiscordReportableError {
@@ -33,27 +36,16 @@ export class HalloweenDiscordError extends DiscordReportableError {
     return {
       embeds: [
         {
-          // TODO: Common embed format
-          author: {
-            name: "Luther",
-            icon_url:
-              "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
-          },
-          timestamp: new Date().toISOString(),
+          author: getDiscordEmbedAuthor(),
+          timestamp: getDiscordEmbedTimestamp(),
           color: Color.Error,
-          footer: {
-            text: `Reference Code: ${interaction.id}`,
-          },
+          footer: getErrorDiscordEmbedFooter(interaction),
           title: "Cloverse Halloween 2021 - Error",
           description: "Something went wrong",
           fields: [
             {
               name: "Message",
               value: message,
-            },
-            {
-              name: "Reference ID",
-              value: interaction.id,
             },
           ],
         },
