@@ -23,7 +23,7 @@ export async function getInteractionResponse(
   const appId = envService.getDiscordApplicationId();
 
   try {
-    const authHeader = `Bearer ${authToken}`;
+    const authHeader = `Bot ${authToken}`;
     const response = await axios.get<
       RESTPatchAPIInteractionOriginalResponseJSONBody,
       AxiosResponse<RESTGetAPIWebhookWithTokenMessageResult>

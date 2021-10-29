@@ -2,6 +2,7 @@ import {
   APIInteraction,
   RESTPatchAPIInteractionOriginalResponseJSONBody,
 } from "discord-api-types";
+import { envService } from "../envService";
 import { getClientCredentialsToken } from "./getClientCredentialsToken";
 import { getInteractionResponse } from "./getInteractionResponse";
 import { updateInteractionResponse } from "./updateInteractionResponse";
@@ -10,10 +11,7 @@ export const discordService = {
   getInteractionResponse: async (
     interaction: APIInteraction,
   ): ReturnType<typeof getInteractionResponse> => {
-    return getInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction,
-    );
+    return getInteractionResponse(envService.getDiscordBotToken(), interaction);
   },
   getClientCredentialsToken,
   updateInteractionResponse: async (
@@ -21,7 +19,7 @@ export const discordService = {
     body: RESTPatchAPIInteractionOriginalResponseJSONBody,
   ): ReturnType<typeof updateInteractionResponse> => {
     return updateInteractionResponse(
-      await getClientCredentialsToken(),
+      envService.getDiscordBotToken(),
       interaction.token,
       body,
     );

@@ -134,6 +134,7 @@ export class HalloweenDiscordService extends Construct {
           process.env.cchdiscord_discord_application_id || "",
         DISCORD_CLIENT_SECRET:
           process.env.cchdiscord_discord_client_secret || "",
+        DISCORD_BOT_TOKEN: process.env.cchdiscord_discord_bot_token || "",
         DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
         NODE_OPTIONS: "--enable-source-maps",
@@ -178,6 +179,7 @@ export class HalloweenDiscordService extends Construct {
           sourceMap: true,
         },
         environment: {
+          DISCORD_BOT_TOKEN: process.env.cchdiscord_discord_bot_token || "",
           DISCORD_APPLICATION_ID:
             process.env.cchdiscord_discord_application_id || "",
           DISCORD_CLIENT_SECRET:

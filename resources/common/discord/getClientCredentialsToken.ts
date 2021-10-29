@@ -6,8 +6,6 @@ import { isAxiosError } from "../axios/isAxiosError";
 import { envService } from "../envService";
 import { logger } from "../Logger";
 
-// PERF: Reusing tokens would be smart. Maybe through SSM?
-// At the very least, store it for warm invocations
 export async function getClientCredentialsToken(
   scopes: OAuth2Scopes[] = [OAuth2Scopes.Identify],
 ): Promise<string> {

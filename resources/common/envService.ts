@@ -8,6 +8,7 @@ export const envService = {
   getDiscordClientSecret: requiredEnvGetter("DISCORD_CLIENT_SECRET"),
   getDiscordApplicationId: requiredEnvGetter("DISCORD_APPLICATION_ID"),
   getFulfillmentQueueUrl: requiredEnvGetter("FULFILLMENT_QUEUE_URL"),
+  getDiscordBotToken: requiredEnvGetter("DISCORD_BOT_TOKEN"),
 };
 
 function requiredEnvGetter(envKey: string): () => string;
