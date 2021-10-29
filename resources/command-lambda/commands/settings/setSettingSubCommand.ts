@@ -6,7 +6,6 @@ import { knex } from "../../../common/db/client";
 import { createDefaultGuildSettings } from "../../../common/db/guild-settings/createDefaultGuildSettings";
 import { hasGuildSettings } from "../../../common/db/guild-settings/hasGuildSettings";
 import { GuildSettings } from "../../../common/db/RecordType";
-import { HalloweenTable } from "../../../common/db/TableName";
 import { discordService } from "../../../common/discord/discordService";
 import {
   commandStructure,
@@ -16,6 +15,11 @@ import { ValidationError } from "../../../common/errors/ValidationError";
 import { isKeyOf } from "../../../common/isKeyOf";
 import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
+import * as moment from "moment-timezone";
+import { guildSettingsService } from "../../../common/db/guildSettingsService";
+import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
+import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
+import { Color } from "../../../common/Color";
 
 /**
  * Admin-only command for configuring event settings.
@@ -61,26 +65,26 @@ export const setSettingsSubCommand = chatSubcommandHandler(
     const fieldMap = {
       knocks_per_day: field({
         field: "knocksPerDay",
-        // 1-19
-        validate: (s) => /^1[0-9]?$/.test(s),
+        validate: (s) => /^\d+$/.test(s),
         transform: (s) => Number.parseInt(s, 10),
       }),
       start_date: field({
         field: "startDate",
         // YYYY-MM-DD
         validate: (s) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s),
-        transform: (s) => new Date(`${s} 00:00:00Z-5`),
+        transform: (s) =>
+          moment(`${s} 00:00:00`).tz("America/Chicago").toDate(),
       }),
       end_date: field({
         field: "endDate",
         // YYYY-MM-DD
         validate: (s) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s),
-        transform: (s) => new Date(`${s} 00:00:00Z-5`),
+        transform: (s) =>
+          moment(`${s} 00:00:00`).tz("America/Chicago").toDate(),
       }),
       reset_time: field({
         field: "resetTime",
-        // 0-23
-        validate: (s) => /^([0-9]|1[0-9]|2[0-3])$/.test(s),
+        validate: (s) => /^\d+$/.test(s),
         transform: (s) => Number.parseInt(s, 10),
       }),
       win_rate: field({
@@ -105,22 +109,47 @@ export const setSettingsSubCommand = chatSubcommandHandler(
 
     // Validate incoming data for the specific field
     if (!updateField.validate(valueOption.value)) {
-      await discordService.updateInteractionResponse(interaction, {
-        content:
-          "That value doesn't look quite right. Please double check the format. Dates should be in the YYYY-MM-DD format. Reset time should be in a 24-hour format, 12 = noon. All times are US Central",
+      throw new ValidationError({
+        message: "Validation failed when setting settings",
+        sourceError: new Error(
+          `Transform-level validation failed for field ${selectedField} on GuildSettings`,
+        ),
+        thrownFrom: "setSettingsSubCommand",
+        validationErrors: [
+          {
+            error: "Validation failed",
+            field: selectedField,
+          },
+        ],
       });
-      return;
     }
 
     await knex().transaction(async (tx) => {
       if (!(await hasGuildSettings(interaction.guild_id, tx))) {
         await createDefaultGuildSettings(interaction.guild_id, tx);
       }
-      await tx<GuildSettings>(HalloweenTable.GuildSettings).update({
+      await guildSettingsService.updateGuildSettings(interaction.guild_id, {
         [updateField.field]: updateField.transform(valueOption.value),
       });
       await discordService.updateInteractionResponse(interaction, {
-        content: `Got it. Updated ${selectedField}`,
+        embeds: [
+          {
+            author: getDiscordEmbedAuthor(),
+            timestamp: getDiscordEmbedTimestamp(),
+            color: Color.Primary,
+            description: "Got it. Settings updates will take effect right away",
+            fields: [
+              {
+                name: "Setting",
+                value: selectedField,
+              },
+              {
+                name: "Value",
+                value: valueOption.value,
+              },
+            ],
+          },
+        ],
       });
     });
   },
