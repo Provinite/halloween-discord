@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord-api-types/v9";
+import moment = require("moment");
 import { knex } from "../../../common/db/client";
 import { HalloweenTable } from "../../../common/db/TableName";
 import { discordService } from "../../../common/discord/discordService";
@@ -42,24 +43,28 @@ export const listSettingsSubCommand = chatSubcommandHandler(
             {
               name: "Knocks Per Day",
               value: settings.knocksPerDay.toString(),
-              inline: true,
             },
             {
               name: "Win Rate",
               value: settings.winRate.toString(),
-              inline: true,
             },
             {
               name: "Start Date",
               value: settings.startDate
-                ? settings.startDate.toISOString()
+                ? moment(settings.startDate)
+                    .tz("America/Chicago")
+                    .format("YYYY-MM-DD h:mm a")
+                    .toUpperCase()
                 : "None",
-              inline: true,
             },
             {
               name: "End Date",
-              value: settings.endDate ? settings.endDate.toISOString() : "None",
-              inline: true,
+              value: settings.endDate
+                ? moment(settings.endDate)
+                    .tz("America/Chicago")
+                    .format("YYYY-MM-DD h:mm a")
+                    .toUpperCase()
+                : "None",
             },
           ],
         },

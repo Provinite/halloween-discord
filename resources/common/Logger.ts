@@ -1,4 +1,4 @@
-import * as moment from "moment-timezone";
+import moment = require("moment-timezone");
 export enum LogLevel {
   Info = "info",
   Error = "error",

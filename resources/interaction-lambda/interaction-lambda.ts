@@ -22,7 +22,6 @@ import { Lambda } from "aws-sdk";
 import { envService } from "../common/envService";
 import { logger } from "../common/Logger";
 import { captureAWSClient } from "aws-xray-sdk-core";
-import * as moment from "moment-timezone";
 const lambda = captureAWSClient(new Lambda());
 
 const actualHandler = async (
@@ -32,7 +31,6 @@ const actualHandler = async (
     source: "interaction-lambda",
     message: "Lambda invoked",
     event,
-    timestamp: moment.tz("America/Chicago").toISOString(),
   });
 
   const signature = getHeader(event.headers, SignatureHeaders.Signature);

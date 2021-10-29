@@ -11,7 +11,14 @@ export const errorHandler = async (
 ): Promise<void> => {
   commandLambdaLogger.error({
     message: "Error processing command: " + error.message,
-    error,
+    error:
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : error,
     interaction,
     sourceError: "sourceError" in error ? (error as any).sourceError : null,
   });

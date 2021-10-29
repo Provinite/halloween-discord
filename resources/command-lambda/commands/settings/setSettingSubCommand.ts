@@ -15,7 +15,7 @@ import { ValidationError } from "../../../common/errors/ValidationError";
 import { isKeyOf } from "../../../common/isKeyOf";
 import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
-import * as moment from "moment-timezone";
+import moment = require("moment-timezone");
 import { guildSettingsService } from "../../../common/db/guildSettingsService";
 import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
 import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
@@ -72,15 +72,42 @@ export const setSettingsSubCommand = chatSubcommandHandler(
         field: "startDate",
         // YYYY-MM-DD
         validate: (s) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s),
-        transform: (s) =>
-          moment(`${s} 00:00:00`).tz("America/Chicago").toDate(),
+        transform: (s) => {
+          const [year, month, day] = s
+            .split("-")
+            .map((s) => Number.parseInt(s, 10));
+
+          return moment
+            .tz("America/Chicago")
+            .year(year)
+            .set("M", month - 1)
+            .set("D", day)
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0)
+            .toDate();
+        },
       }),
       end_date: field({
         field: "endDate",
         // YYYY-MM-DD
         validate: (s) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s),
-        transform: (s) =>
-          moment(`${s} 00:00:00`).tz("America/Chicago").toDate(),
+        transform: (s) => {
+          const [year, month, day] = s
+            .split("-")
+            .map((s) => Number.parseInt(s, 10));
+          return moment
+            .tz("America/Chicago")
+            .year(year)
+            .set("M", month - 1)
+            .set("D", day)
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0)
+            .toDate();
+        },
       }),
       reset_time: field({
         field: "resetTime",

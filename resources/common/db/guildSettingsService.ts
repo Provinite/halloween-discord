@@ -1,5 +1,5 @@
 import { Moment } from "moment";
-import * as moment from "moment";
+import moment = require("moment");
 import { MissingGuildSettingsError } from "../errors/MissingGuildConfigurationError";
 import { knex } from "./client";
 import { GuildSettings } from "./RecordType";

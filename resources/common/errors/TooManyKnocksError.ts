@@ -7,6 +7,7 @@ import { Color } from "../Color";
 import { getErrorDiscordEmbedFooter } from "./util/getErrorDiscordEmbedFooter";
 import { SetOptional } from "type-fest";
 import { Moment } from "moment";
+import moment = require("moment-timezone");
 import { getDiscordEmbedTimestamp } from "../discord/ui/getDiscordEmbedTimestamp";
 export interface TooManyKnocksErrorConfig extends DiscordReportableErrorConfig {
   knocksPerDay: number;
@@ -54,11 +55,18 @@ export class TooManyKnocksError extends DiscordReportableError {
             },
             {
               name: "Reset Time (24h format)",
-              value: `${this.config.resetTime.toString()}:00 US Central Time`,
+              value:
+                moment
+                  .tz("America/Chicago")
+                  .hour(this.config.resetTime)
+                  .format("h a")
+                  .toUpperCase() + " US Central Time",
             },
             {
               name: "Last Reset Time",
-              value: `${this.config.lastResetTime.toISOString()}`,
+              value: `${this.config.lastResetTime
+                .tz("America/Chicago")
+                .format("YYYY-MM-DD h:mm:ss a")}`,
             },
           ],
         },
