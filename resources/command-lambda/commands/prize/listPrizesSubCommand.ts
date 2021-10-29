@@ -57,7 +57,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
         description:
           "These are the remaining prizes still to go for the event." +
           " Each prize has a different stock and likelyhood of" +
-          " being given out per-win. We intend to give out all of" +
+          " being given out (weight) per win. We intend to give out all of" +
           " the prizes before the event ends!",
         fields: [],
       },
@@ -66,10 +66,11 @@ export const listPrizesSubCommand = chatSubcommandHandler(
     for (const prize of prizes) {
       currentEmbed.fields!.push({
         name: prize.name,
-        inline: true,
-        value: `**${vagueNumberName(prize.currentStock)}** ${randomElement(
+        value: `${capitalizeFirstLetter(
+          vagueNumberName(prize.currentStock),
+        )} || ${prize.currentStock} || ${randomElement(
           remainingSynonyms,
-        )}`,
+        )} || weight: ${prize.weight} ||`,
       });
     }
     await discordService.updateInteractionResponse(interaction, {
@@ -77,3 +78,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
     });
   },
 );
+
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
