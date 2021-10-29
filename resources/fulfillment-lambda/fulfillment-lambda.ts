@@ -28,7 +28,6 @@ export const handler = async (event: SQSEvent): Promise<void> => {
     source: "fulfillment-lambda",
     message: "Lambda invoked",
     event,
-    timestamp: new Date().toISOString(),
   });
 
   let i = 0;

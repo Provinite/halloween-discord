@@ -7,12 +7,11 @@ import { createDefaultGuildSettings } from "../../../common/db/guild-settings/cr
 import { hasGuildSettings } from "../../../common/db/guild-settings/hasGuildSettings";
 import { GuildSettings } from "../../../common/db/RecordType";
 import { HalloweenTable } from "../../../common/db/TableName";
-import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
+import { discordService } from "../../../common/discord/discordService";
 import {
   commandStructure,
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
-import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { ValidationError } from "../../../common/errors/ValidationError";
 import { isKeyOf } from "../../../common/isKeyOf";
 import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
@@ -106,14 +105,10 @@ export const setSettingsSubCommand = chatSubcommandHandler(
 
     // Validate incoming data for the specific field
     if (!updateField.validate(valueOption.value)) {
-      await updateInteractionResponse(
-        await getClientCredentialsToken(),
-        interaction.token,
-        {
-          content:
-            "That value doesn't look quite right. Please double check the format. Dates should be in the YYYY-MM-DD format. Reset time should be in a 24-hour format, 12 = noon. All times are US Central",
-        },
-      );
+      await discordService.updateInteractionResponse(interaction, {
+        content:
+          "That value doesn't look quite right. Please double check the format. Dates should be in the YYYY-MM-DD format. Reset time should be in a 24-hour format, 12 = noon. All times are US Central",
+      });
       return;
     }
 
@@ -124,13 +119,9 @@ export const setSettingsSubCommand = chatSubcommandHandler(
       await tx<GuildSettings>(HalloweenTable.GuildSettings).update({
         [updateField.field]: updateField.transform(valueOption.value),
       });
-      await updateInteractionResponse(
-        await getClientCredentialsToken(),
-        interaction.token,
-        {
-          content: `Got it. Updated ${selectedField}`,
-        },
-      );
+      await discordService.updateInteractionResponse(interaction, {
+        content: `Got it. Updated ${selectedField}`,
+      });
     });
   },
 );

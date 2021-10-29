@@ -51,6 +51,8 @@ export function knex<T extends HalloweenTable>(
 }
 
 export async function closeKnex(): Promise<void> {
-  await knexInstance.destroy();
-  knexInstance = undefined as any;
+  if (knexInstance) {
+    await knexInstance.destroy();
+    knexInstance = undefined as any;
+  }
 }

@@ -10,14 +10,14 @@ export class FulfillmentLambdaLogger extends Logger {
     const interaction = interactionContext.getStore();
     if (interaction) {
       return {
-        source: "command-lambda",
+        source: "fulfillment-lambda",
         interactionId: interaction.id,
         guildId: interaction.guild_id,
         userId: interaction.member?.user.id,
       };
     } else {
       return {
-        source: "command-lambda",
+        source: "fulfillment-lambda",
       };
     }
   }

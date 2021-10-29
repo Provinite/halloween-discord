@@ -1,3 +1,4 @@
+import * as moment from "moment-timezone";
 export enum LogLevel {
   Info = "info",
   Error = "error",
@@ -13,6 +14,7 @@ export class Logger {
   ) {}
   log<T>(level: LogLevel, message: T): void {
     let logObject: any;
+    const timestamp = moment.tz("America/Chicago").toISOString();
     if (typeof message === "string") {
       logObject = { message, level };
     } else if (Array.isArray(message)) {
@@ -21,7 +23,7 @@ export class Logger {
         level,
       };
     } else if (!message) {
-      logObject = { message: "", level };
+      logObject = { message: "", level, timestamp };
     } else {
       logObject = message;
     }
@@ -29,7 +31,7 @@ export class Logger {
     console[level](
       JSON.stringify(
         {
-          timestamp: new Date().toISOString(),
+          timestamp,
           ...logObject,
           ...this.getAdditionalLogProps(),
           ...this.getAdditionalContextLogProps(),

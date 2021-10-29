@@ -1,16 +1,15 @@
-import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
 import {
   commandStructure,
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
 import { APIEmbed } from "discord-api-types/v9";
-import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 import { vagueNumberName } from "../../util/vagueNumberName";
 import { randomElement } from "../../util/randomElement";
 import { prizeService } from "../../../common/db/prizeService";
 import { Color } from "../../../common/Color";
 import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
+import { discordService } from "../../../common/discord/discordService";
 
 const remainingSynonyms = [
   "remaining",
@@ -73,12 +72,8 @@ export const listPrizesSubCommand = chatSubcommandHandler(
         )}`,
       });
     }
-    await updateInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction.token,
-      {
-        embeds: prizeEmbeds,
-      },
-    );
+    await discordService.updateInteractionResponse(interaction, {
+      embeds: prizeEmbeds,
+    });
   },
 );

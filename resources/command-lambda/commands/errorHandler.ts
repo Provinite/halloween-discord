@@ -1,7 +1,7 @@
 import { APIInteraction } from "discord-api-types/v9";
-import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
+import { discordService } from "../../common/discord/discordService";
 import { getInteractionContextOrDie } from "../../common/discord/interactionContext";
-import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
+import { DiscordWebhookMessageUnavailableError } from "../../common/errors/DiscordWebhookMessageUnavailable";
 import { DiscordReportableError } from "../errors/DiscordReportableError";
 import { commandLambdaLogger } from "../util/commandLambdaLogger";
 
@@ -16,20 +16,22 @@ export const errorHandler = async (
     sourceError: "sourceError" in error ? (error as any).sourceError : null,
   });
   if (error instanceof DiscordReportableError) {
-    await updateInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction.token,
+    await discordService.updateInteractionResponse(
+      interaction,
       error.getDiscordResponseBody(),
     );
+  } else if (error instanceof DiscordWebhookMessageUnavailableError) {
+    commandLambdaLogger.error({
+      message:
+        "Discord webhook message unavailable. Interaction lambda probably took too long.",
+      interaction,
+      name: "DiscordWebhookMessageUnavailableError",
+    });
   } else {
-    await updateInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction.token,
-      {
-        content:
-          "An unknown error ocurred while processing your request. Reference ID: " +
-          interaction.id,
-      },
-    );
+    await discordService.updateInteractionResponse(interaction, {
+      content:
+        "An unknown error ocurred while processing your request. Reference ID: " +
+        interaction.id,
+    });
   }
 };

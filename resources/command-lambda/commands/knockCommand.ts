@@ -2,8 +2,6 @@
  * @module
  * @description Handler for the /knock command
  */
-import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
-import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
 import { guildSettingsService } from "../../common/db/guildSettingsService";
@@ -16,6 +14,7 @@ import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbe
 import { Color } from "../../common/Color";
 import { sendFulfillmentMessage } from "../util/sendFulfillmentMessage";
 import { commandLambdaLogger } from "../util/commandLambdaLogger";
+import { discordService } from "../../common/discord/discordService";
 
 export const knockCommand = chatCommandHandler(
   HalloweenCommand.Knock,
@@ -26,7 +25,6 @@ export const knockCommand = chatCommandHandler(
         user: { id: userId },
       },
     } = interaction;
-    const token = await getClientCredentialsToken();
     const settings = await guildSettingsService.getGuildSettings(guildId);
     // 1. Check if the event is running
     if (!settings.startDate || settings.startDate > new Date()) {
@@ -77,7 +75,7 @@ export const knockCommand = chatCommandHandler(
         userId,
         prizeId: null,
       });
-      await updateInteractionResponse(token, interaction.token, {
+      await discordService.updateInteractionResponse(interaction, {
         embeds: [
           {
             title: "No one was home",

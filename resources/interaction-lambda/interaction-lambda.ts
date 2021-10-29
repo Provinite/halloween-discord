@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import { getHeader } from "./getHeader";
 import { SignatureHeaders } from "./SignatureHeaders";
 import { apiGatewayResult } from "../common/lambda/apiGatewayResult";
@@ -18,6 +22,7 @@ import { Lambda } from "aws-sdk";
 import { envService } from "../common/envService";
 import { logger } from "../common/Logger";
 import { captureAWSClient } from "aws-xray-sdk-core";
+import * as moment from "moment-timezone";
 const lambda = captureAWSClient(new Lambda());
 
 const actualHandler = async (
@@ -27,7 +32,7 @@ const actualHandler = async (
     source: "interaction-lambda",
     message: "Lambda invoked",
     event,
-    timestamp: new Date().toISOString(),
+    timestamp: moment.tz("America/Chicago").toISOString(),
   });
 
   const signature = getHeader(event.headers, SignatureHeaders.Signature);
@@ -68,13 +73,21 @@ const actualHandler = async (
     });
   } else if (isApplicationCommandInteraction(body)) {
     if (isApplicationCommandGuildInteraction(body)) {
-      await lambda
-        .invoke({
-          FunctionName: envService.getCommandLambdaArn(),
-          Payload: JSON.stringify({ body }),
-          InvocationType: "Event",
-        })
-        .promise();
+      setTimeout(() => {
+        logger.info({
+          message: "Launching command lambda!",
+        });
+        lambda
+          .invoke({
+            FunctionName: envService.getCommandLambdaArn(),
+            Payload: JSON.stringify({ body }),
+            InvocationType: "Event",
+          })
+          .promise()
+          .then(() => {
+            logger.info("Command lambda successfully fired");
+          });
+      });
       return apiGatewayResult<APIInteractionResponseDeferredChannelMessageWithSource>(
         {
           statusCode: 200,
@@ -110,22 +123,38 @@ const actualHandler = async (
   }
 };
 
-export const handler = async (
+/**
+ * This must be a non-async handler to allow for the use of setTimeout to invoke the
+ * command lambda AFTER returning the API response. Async handlers end immediately upon returning.
+ * https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html
+ * @param event
+ * @param context
+ * @param callback
+ */
+export const handler = (
   event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResult> => {
-  try {
-    const result = await actualHandler(event);
-    logger.info({
-      source: "interaction-lambda",
-      message: "Lambda completed",
-      result,
-    });
-    return result;
-  } catch (err) {
-    logger.error({
-      message: "Error during invocation",
-      error: err,
-    });
-    throw err;
-  }
+  context: Context,
+  callback: (error: Error | null, result?: APIGatewayProxyResult) => void,
+): void => {
+  new Promise<APIGatewayProxyResult>((resolve, reject) => {
+    actualHandler(event).then((result) => {
+      logger.info({
+        source: "interaction-lambda",
+        message: "Lambda completed",
+        result,
+      });
+      resolve(result);
+    }, reject);
+  }).then(
+    (result) => {
+      callback(null, result);
+    },
+    (err) => {
+      logger.error({
+        message: "Error during invocation",
+        error: err,
+      });
+      callback(err);
+    },
+  );
 };

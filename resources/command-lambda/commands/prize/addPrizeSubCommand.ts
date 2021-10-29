@@ -1,12 +1,11 @@
 import { PermissionFlagsBits } from "discord-api-types/v9";
 import { prizeService } from "../../../common/db/prizeService";
 import { Prize } from "../../../common/db/RecordType";
-import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
+import { discordService } from "../../../common/discord/discordService";
 import {
   commandStructure,
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
-import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { isKeyOf } from "../../../common/isKeyOf";
 import { DiscordReportableError } from "../../errors/DiscordReportableError";
 import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
@@ -158,12 +157,8 @@ export const addPrizeSubCommand = chatSubcommandHandler(
         sourceError: new Error(JSON.stringify(err)),
       });
     }
-    await updateInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction.token,
-      {
-        content: `Added ${prize.initialStock} units of ${prize.name} as ${prize.id} with weight ${prize.weight}`,
-      },
-    );
+    await discordService.updateInteractionResponse(interaction, {
+      content: `Added ${prize.initialStock} units of ${prize.name} as ${prize.id} with weight ${prize.weight}`,
+    });
   },
 );

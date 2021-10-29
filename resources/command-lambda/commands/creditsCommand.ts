@@ -2,20 +2,17 @@
  * @module
  * @description Handler for the /credits command
  */
-import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
-import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
 import { hexStringToInt } from "../../common/hexStringToInt";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
 import { APIEmbedField } from "discord-api-types/v9";
 import { commandLambdaLogger } from "../util/commandLambdaLogger";
 import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
+import { discordService } from "../../common/discord/discordService";
 
 export const creditsCommand = chatCommandHandler(
   HalloweenCommand.Credits,
   async (interaction) => {
-    const token = await getClientCredentialsToken();
-
     const credits = [
       { name: "A2J", credit: "Biiiig brains" },
       { name: "Provinite", credit: "OK brains, biiiiig attitude" },
@@ -45,7 +42,7 @@ export const creditsCommand = chatCommandHandler(
       message: "Sending credits response",
     });
 
-    await updateInteractionResponse(token, interaction.token, {
+    await discordService.updateInteractionResponse(interaction, {
       embeds: [
         {
           author: {

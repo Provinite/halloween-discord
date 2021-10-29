@@ -109,7 +109,7 @@ export class HalloweenDiscordService extends Construct {
       "POST",
       new LambdaIntegration(this.interactionLambda, {
         allowTestInvoke: false,
-        timeout: Duration.seconds(3),
+        timeout: Duration.seconds(10),
       }),
     );
   }
@@ -160,7 +160,7 @@ export class HalloweenDiscordService extends Construct {
           COMMAND_LAMBDA_ARN: this.commandLambda.functionArn,
         },
         description: "Interaction lambda",
-        timeout: Duration.seconds(3),
+        timeout: Duration.seconds(30),
         tracing: Tracing.ACTIVE,
       },
     );
