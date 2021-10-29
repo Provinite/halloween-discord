@@ -10,6 +10,7 @@ import { prizeService } from "../../../common/db/prizeService";
 import { Color } from "../../../common/Color";
 import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
 import { discordService } from "../../../common/discord/discordService";
+import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
 
 const remainingSynonyms = [
   "remaining",
@@ -46,11 +47,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
     // TODO: Probably showing at least some images somehow?
     const prizeEmbeds: APIEmbed[] = [
       {
-        author: {
-          name: "Luther",
-          icon_url:
-            "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
-        },
+        author: getDiscordEmbedAuthor(),
         color: Color.Primary,
         title: "Cloverse Halloween 2021 - Prize List",
         timestamp: getDiscordEmbedTimestamp(),

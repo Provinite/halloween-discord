@@ -14,11 +14,23 @@ export const creditsCommand = chatCommandHandler(
   HalloweenCommand.Credits,
   async (interaction) => {
     const credits = [
-      { name: "A2J", credit: "Biiiig brains" },
-      { name: "Provinite", credit: "OK brains, biiiiig attitude" },
+      { name: "A2J", credit: "Artwork, Planning" },
+      { name: "Provinite", credit: "Software, Planning" },
       {
-        name: "Dimmy",
-        credit: "Brains: [] | Attitude: [] | Dimmy: [x]",
+        name: "Pesky Potato",
+        credit: "Software",
+      },
+      {
+        name: "EmmyGoat",
+        credit: "",
+      },
+      {
+        name: "SpiritBurn",
+        credit: "",
+      },
+      {
+        name: "PeaBandJ",
+        credit: "",
       },
     ];
 
