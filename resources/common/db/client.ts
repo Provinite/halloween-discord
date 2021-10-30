@@ -2,7 +2,9 @@ import { knex as createKnex, Knex } from "knex";
 import { RecordType } from "./RecordType";
 import { HalloweenTable } from "./TableName";
 import pgDialect from "knex/lib/dialects/postgres";
-
+import { capturePostgres } from "aws-xray-sdk";
+import pg = require("pg");
+capturePostgres(pg);
 let knexInstance: Knex;
 
 type TypedKnex<T> = T &

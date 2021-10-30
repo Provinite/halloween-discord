@@ -139,7 +139,7 @@ export class HalloweenDiscordService extends Construct {
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
         NODE_OPTIONS: "--enable-source-maps",
       },
-      tracing: Tracing.ACTIVE,
+      tracing: Tracing.PASS_THROUGH,
       timeout: Duration.seconds(30),
     });
 
@@ -187,7 +187,8 @@ export class HalloweenDiscordService extends Construct {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           DB_SECRET_JSON: this.databaseInstance.secret!.secretValue.toString(),
         },
-        tracing: Tracing.ACTIVE,
+        timeout: Duration.seconds(30),
+        tracing: Tracing.PASS_THROUGH,
       },
     );
 

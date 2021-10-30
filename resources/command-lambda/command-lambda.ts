@@ -4,6 +4,8 @@
  *  Invoked asynchronously by the interaction lambda. Event data should be an object
  *  with a body key whose value is the entire POST body for the initial webhook hit.
  */
+import "../common/xray/instrumentOutboundHttps";
+
 import {
   APIApplicationCommandGuildInteraction,
   MessageFlags,

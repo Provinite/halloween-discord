@@ -91,9 +91,6 @@ const actualHandler = async (
           statusCode: 200,
           body: {
             type: InteractionResponseType.DeferredChannelMessageWithSource,
-            data: {
-              flags: MessageFlags.Ephemeral,
-            },
           },
         },
       );

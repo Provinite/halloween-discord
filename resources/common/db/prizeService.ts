@@ -121,7 +121,7 @@ export const prizeService = {
     tx = knex(),
   ): Promise<Prize> {
     const prizes = await prizeService.getPrizes(
-      (qb) => qb.where("id", prizeId),
+      (qb) => qb.where({ id: prizeId, guildId }),
       tx,
     );
     if (!prizes.length || prizes[0].currentStock === 0) {

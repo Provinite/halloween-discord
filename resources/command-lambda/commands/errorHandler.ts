@@ -35,10 +35,20 @@ export const errorHandler = async (
       name: "DiscordWebhookMessageUnavailableError",
     });
   } else {
-    await discordService.updateInteractionResponse(interaction, {
-      content:
-        "An unknown error ocurred while processing your request. Reference ID: " +
-        interaction.id,
-    });
+    const unknownError = new DiscordReportableError(
+      `An unknown error ocurred while processing your request`,
+      {
+        errorsLambda: true,
+        message: "An unknown error ocurred while processing your request",
+        sourceError: error,
+        name: "UnknownError",
+        thrownFrom: "errorHandler",
+        interaction,
+      },
+    );
+    await discordService.updateInteractionResponse(
+      interaction,
+      unknownError.getDiscordResponseBody(),
+    );
   }
 };
