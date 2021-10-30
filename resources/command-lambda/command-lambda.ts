@@ -29,8 +29,6 @@ import { DiscordWebhookMessageUnavailableError } from "../common/errors/DiscordW
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
 };
-// TODO: Wrap handler in an error-handler that will
-// complete the interaction
 
 export const handler = async (event: CommandLambdaEvent): Promise<void> => {
   await interactionContext.run(event.body, async () => {

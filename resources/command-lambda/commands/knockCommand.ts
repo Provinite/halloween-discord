@@ -39,14 +39,11 @@ export const knockCommand = chatCommandHandler(
     // 2. Check if the user has any knocks left
     const { knocksPerDay, resetTime, winRate } = settings;
     const lastReset = guildSettingsService.getLastReset(settings);
-    // PERF: count here instead of fetching
-    const knockEvents = await knockEventService.getKnockEvents((qb) =>
-      qb.where({
-        guildId,
-        userId,
-      }),
+    const knockCount = await knockEventService.getKnockCountSinceLastReset(
+      settings,
+      userId,
     );
-    if (knockEvents.length >= knocksPerDay) {
+    if (knockCount >= knocksPerDay) {
       throw new TooManyKnocksError({
         guildId,
         userId,
@@ -54,7 +51,7 @@ export const knockCommand = chatCommandHandler(
         resetTime,
         lastResetTime: lastReset,
         sourceError: new Error(
-          `User ${userId} attempted to knock. Already knocked ${knockEvents.length} times`,
+          `User ${userId} attempted to knock. Already knocked ${knockCount} times`,
         ),
         thrownFrom: "knockCommand",
       });

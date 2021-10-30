@@ -19,6 +19,8 @@ import {
   fulfillmentLambdaLogger,
 } from "./FulfillmentLambdaLogger";
 import { selectRandomWeightedElement } from "./randomWeightedElement";
+import { guildSettingsService } from "../common/db/guildSettingsService";
+import { TooManyKnocksError } from "../common/errors/TooManyKnocksError";
 
 /**
  * Lambda entry point
@@ -60,11 +62,50 @@ export const handler = async (
           message: `Processing fulfillment ${i++}`,
         });
 
-        // TODO: Verify knocks before doing this. If a user spams knocks, we might end up here too many times.
-        // If they are over their knock count, we should HARD DELETE the incoming pending knock event.
-
         // TODO: Move to prizeService method
         await knex().transaction(async (tx) => {
+          const guildSettings = await guildSettingsService.getGuildSettings(
+            interaction.guild_id,
+            tx,
+          );
+          const knockCount =
+            await knockEventService.getKnockCountSinceLastReset(
+              guildSettings,
+              interaction.member.user.id,
+              tx,
+            );
+          if (knockCount > guildSettings.knocksPerDay) {
+            const error = new TooManyKnocksError({
+              guildId: interaction.guild_id,
+              userId: interaction.member.user.id,
+              knocksPerDay: guildSettings.knocksPerDay,
+              lastResetTime: guildSettingsService.getLastReset(guildSettings),
+              resetTime: guildSettings.resetTime,
+              sourceError: new Error(
+                "Pending knock would exceed knocks per day limit during fulfillment.",
+              ),
+              thrownFrom: "fulfillment-lambda",
+              interaction,
+            });
+            fulfillmentLambdaLogger.error({
+              message:
+                "Pending knock would exceed knocks per day if fulfilled. Deleting knock event",
+              error: {
+                message: error.message,
+                config: error.config,
+                name: error.name,
+              },
+            });
+            await knockEventService.deletePendingKnockEvent(knockEventId, tx);
+            fulfillmentLambdaLogger.error({
+              message: "Notifying user of error",
+            });
+            await discordService.updateInteractionResponse(
+              interaction,
+              error.getDiscordResponseBody(),
+            );
+          }
+
           const prizes = await prizeService.getPrizes(
             (qb) =>
               qb

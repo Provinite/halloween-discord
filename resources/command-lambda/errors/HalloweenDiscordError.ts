@@ -14,7 +14,9 @@ export class HalloweenDiscordError extends DiscordReportableError {
     message,
     interaction,
     sourceError,
+    errorsLambda,
   }: {
+    errorsLambda?: boolean;
     thrownFrom: string;
     message: string;
     interaction?: APIInteraction;
@@ -22,7 +24,7 @@ export class HalloweenDiscordError extends DiscordReportableError {
   }) {
     super(message, {
       sourceError,
-      errorsLambda: true,
+      errorsLambda: errorsLambda === undefined ? true : errorsLambda,
       interaction,
       message,
       name: "HalloweenDiscordError",

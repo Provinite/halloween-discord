@@ -27,6 +27,9 @@ export const errorHandler = async (
       interaction,
       error.getDiscordResponseBody(),
     );
+    if (error.config.errorsLambda) {
+      throw error;
+    }
   } else if (error instanceof DiscordWebhookMessageUnavailableError) {
     commandLambdaLogger.error({
       message:

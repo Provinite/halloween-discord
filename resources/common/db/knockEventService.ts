@@ -1,10 +1,12 @@
 import { Knex } from "knex";
-import { KnockEvent, Prize } from "./RecordType";
+import { GuildSettings, KnockEvent, Prize } from "./RecordType";
 import { HalloweenTable } from "./TableName";
 import { knex } from "./client";
 import { ValidationError } from "../errors/ValidationError";
 import { SetOptional } from "type-fest";
 import { DiscordReportableError } from "../../command-lambda/errors/DiscordReportableError";
+import { guildSettingsService } from "./guildSettingsService";
+import { HalloweenDiscordError } from "../../command-lambda/errors/HalloweenDiscordError";
 
 /**
  * Callback to modify the query. Useful for adding where clauses etc
@@ -17,7 +19,7 @@ export const knockEventService = {
   async getKnockEvents(
     modifyQuery: KnockEventQueryModifier = (qb) => qb,
     tx = knex(),
-  ) {
+  ): Promise<KnockEvent[]> {
     return modifyQuery(tx(HalloweenTable.KnockEvent).select("*"));
   },
   /**
@@ -66,10 +68,16 @@ export const knockEventService = {
       .where({ id: knockEventId });
     return result;
   },
+  /**
+   * Create a new knock event
+   * @param knockEvent
+   * @param tx
+   * @returns The newly created knock event
+   */
   async saveKnockEvent(
     knockEvent: SetOptional<Omit<KnockEvent, "id" | "time">, "isPending">,
     tx = knex(),
-  ) {
+  ): Promise<KnockEvent> {
     const validationResult =
       knockEventService.validateKnockEventForCreate(knockEvent);
     if (validationResult === true) {
@@ -88,9 +96,15 @@ export const knockEventService = {
       });
     }
   },
+
+  /**
+   * Validate a knock event is OK for creation
+   * @param knockEvent
+   * @returns
+   */
   validateKnockEventForCreate(
     knockEvent: SetOptional<KnockEvent, "id" | "time" | "isPending">,
-  ) {
+  ): true | { field: string; error: string }[] {
     const { id, time, userId, guildId, isPending } = knockEvent;
     const rules: Array<[keyof KnockEvent | "*", string, () => boolean]> = [
       ["userId", "UserID is required", () => Boolean(userId)],
@@ -116,4 +130,51 @@ export const knockEventService = {
       return failingRules.map(([field, error]) => ({ field, error }));
     }
   },
-} as const;
+
+  async getKnockCountSinceLastReset(
+    guildSettings: GuildSettings,
+    userId: string,
+    tx = knex(),
+  ): Promise<number> {
+    const lastReset = guildSettingsService.getLastReset(guildSettings);
+    const [{ count }] = await tx<KnockEvent>(HalloweenTable.KnockEvent)
+      .count("*", {
+        as: "count",
+      })
+      .where({
+        guildId: guildSettings.guildId,
+        userId,
+      })
+      .andWhere("time", ">", lastReset.toDate());
+    return typeof count === "string" ? Number.parseInt(count) : count;
+  },
+
+  /**
+   * Deletes a pending knock event from the database.
+   * If the record is not pending, a HalloweenDiscordError will be thrown.
+   * @param knockEventId
+   * @param tx
+   */
+  async deletePendingKnockEvent(
+    knockEventId: KnockEvent["id"],
+    tx = knex(),
+  ): Promise<void> {
+    const result = await tx<KnockEvent>(HalloweenTable.KnockEvent)
+      .del()
+      .where({
+        id: knockEventId,
+        isPending: true,
+      })
+      .limit(1);
+    if (result !== 1) {
+      throw new HalloweenDiscordError({
+        errorsLambda: true,
+        message: "Something went wrong, sorry. Please let staff know.",
+        sourceError: new Error(
+          `No knock event found with { id: ${knockEventId}, isPending: true } while attempting to delete`,
+        ),
+        thrownFrom: "knockEventService.deletePendingKnockEvent",
+      });
+    }
+  },
+};
