@@ -7,6 +7,7 @@ import { SetOptional } from "type-fest";
 import { DiscordReportableError } from "../../command-lambda/errors/DiscordReportableError";
 import { guildSettingsService } from "./guildSettingsService";
 import { HalloweenDiscordError } from "../../command-lambda/errors/HalloweenDiscordError";
+import { giftyService } from "./giftyService";
 
 /**
  * Callback to modify the query. Useful for adding where clauses etc
@@ -150,7 +151,7 @@ export const knockEventService = {
   },
 
   /**
-   * Deletes a pending knock event from the database.
+   * Deletes a pending knock event from the database. If there are any pending
    * If the record is not pending, a HalloweenDiscordError will be thrown.
    * @param knockEventId
    * @param tx
@@ -159,6 +160,9 @@ export const knockEventService = {
     knockEventId: KnockEvent["id"],
     tx = knex(),
   ): Promise<void> {
+    // disassociate any pending gifties. This frees them up for reuse and
+    // prevents errors when the knock event is deleted
+    await giftyService.disassociateGiftiesFromKnockEvent(knockEventId, tx);
     const result = await tx<KnockEvent>(HalloweenTable.KnockEvent)
       .del()
       .where({

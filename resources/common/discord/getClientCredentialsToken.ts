@@ -15,7 +15,6 @@ export async function getClientCredentialsToken(
   const data = new URLSearchParams();
   data.append("grant_type", "client_credentials");
   data.append("scope", scopes.join(" "));
-  // TODO: Make a bot for this
   let response: AxiosResponse<RESTPostOAuth2ClientCredentialsResult>;
   try {
     response = await axios.post<URLSearchParams, AxiosResponse<any>>(

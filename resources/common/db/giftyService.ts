@@ -214,8 +214,15 @@ export const giftyService = {
       .where({ knockEventId })
       .first();
   },
-  // TODO: fulfill gifty (associate w/ knock event)
-  // TODO: fetch next usable gifty for user when knocking
+
+  async disassociateGiftiesFromKnockEvent(
+    knockEventId: number,
+    tx = knex(),
+  ): Promise<void> {
+    await tx<Gifty>(HalloweenTable.Gifty)
+      .update({ knockEventId: null })
+      .where({ knockEventId });
+  },
 };
 
 export function isGiftyRateLimitError(err: ValidationError): boolean {

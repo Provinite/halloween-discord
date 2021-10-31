@@ -11,6 +11,7 @@ import { Color } from "../../../common/Color";
 import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
 import { discordService } from "../../../common/discord/discordService";
 import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
+import { OutOfPrizesError } from "../../../common/errors/OutOfPrizesError";
 
 const remainingSynonyms = [
   "remaining",
@@ -49,6 +50,16 @@ export const listPrizesSubCommand = chatSubcommandHandler(
       title: "Cloverse Halloween 2021 - Prize List",
       timestamp: getDiscordEmbedTimestamp(),
     };
+
+    if (!prizes.length) {
+      throw new OutOfPrizesError({
+        sourceError: new Error(
+          "No in-stock prizes found while attempting to list prizes",
+        ),
+        thrownFrom: "listPrizesSubCommand",
+        guildId: interaction.guild_id,
+      });
+    }
 
     // TODO: Handling for > 250 prizes
     // TODO: Probably showing at least some images somehow?

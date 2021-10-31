@@ -138,4 +138,22 @@ export const prizeService = {
       .where({ id: prizeId, guildId: guildId });
     return result;
   },
+
+  /**
+   * Check if a guild has any prizes left in stock
+   * @param guildId
+   * @param tx
+   * @returns
+   */
+  async hasInStockPrizes(guildId: string, tx = knex()): Promise<boolean> {
+    const [{ count }] = await tx<Prize>(HalloweenTable.Prize)
+      .where({ guildId })
+      .andWhere("currentStock", ">", 0)
+      .count<{ count: string | number }[]>("*", { as: "count" });
+    if (typeof count === "string") {
+      return Number.parseInt(count, 10) > 0;
+    } else {
+      return count > 0;
+    }
+  },
 };

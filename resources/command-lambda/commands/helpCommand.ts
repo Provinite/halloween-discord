@@ -47,7 +47,9 @@ export const helpCommand = chatCommandHandler(
           description:
             "Every day until the event is over, you'll have the opportunity to knock on our door a few times for a chance to win fabulous prizes.",
           footer: {
-            text: "Made with <:pillowSunglasses:328545569179959319> by [Provinite @ Github](https://github.com/provinite)",
+            text: "Made with ❤️ by Provinite @ Github",
+            icon_url:
+              "https://www.dropbox.com/s/ln7f5ucr9eza8vh/clovercoin-logo_gold-gradient.png?dl=1",
           },
         },
       ],

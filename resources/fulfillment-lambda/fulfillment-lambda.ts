@@ -27,6 +27,7 @@ import {
   RESTPostAPIChannelMessageJSONBody,
 } from "discord-api-types/v9";
 import { getDiscordEmbedTimestamp } from "../common/discord/ui/getDiscordEmbedTimestamp";
+import { OutOfPrizesError } from "../common/errors/OutOfPrizesError";
 
 /**
  * Lambda entry point
@@ -124,6 +125,35 @@ export const handler = async (
                 .forUpdate(),
             tx,
           );
+          if (!prizes.length) {
+            const error = new OutOfPrizesError({
+              guildId: interaction.guild_id,
+              sourceError: new Error("No prizes remaining during fulfillment."),
+              thrownFrom: "fulfillment-lambda",
+              interaction,
+            });
+
+            fulfillmentLambdaLogger.error({
+              message:
+                "No prizes remaining during fulfillment. Deleting knock event.",
+              guildId: interaction.guild_id,
+              error: {
+                message: error.message,
+                config: error.config,
+                sourceError: {
+                  ...error.config.sourceError,
+                  message: error.config.sourceError.message,
+                },
+              },
+            });
+            await discordService.updateInteractionResponse(
+              interaction,
+              error.getDiscordResponseBody(),
+            );
+
+            await knockEventService.deletePendingKnockEvent(knockEventId, tx);
+            return;
+          }
           // The prize is selected by weighting the prizes by their current stock * weight
           const weights = prizes.map((p) => p.currentStock * p.weight);
           const prize = selectRandomWeightedElement(prizes, weights);

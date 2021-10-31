@@ -6,6 +6,12 @@ import { GuildSettings } from "./RecordType";
 import { HalloweenTable } from "./TableName";
 import { ValidationError } from "../errors/ValidationError";
 
+export enum EventStatus {
+  NotStartedYet,
+  Ongoing,
+  Ended,
+}
+
 export const guildSettingsService = {
   /**
    * Get guild settings for the specified guild ID
@@ -137,6 +143,20 @@ export const guildSettingsService = {
         field,
         error,
       }));
+    }
+  },
+  getEventStatus(guildSettings: GuildSettings): EventStatus {
+    const { startDate, endDate } = guildSettings;
+    if (!startDate) {
+      return EventStatus.NotStartedYet;
+    }
+    const now = moment.tz("America/Chicago");
+    if (now.isBefore(startDate)) {
+      return EventStatus.NotStartedYet;
+    } else if (endDate && now.isAfter(endDate)) {
+      return EventStatus.Ended;
+    } else {
+      return EventStatus.Ongoing;
     }
   },
 } as const;

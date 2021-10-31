@@ -4,7 +4,10 @@
  */
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
-import { guildSettingsService } from "../../common/db/guildSettingsService";
+import {
+  EventStatus,
+  guildSettingsService,
+} from "../../common/db/guildSettingsService";
 import { EventNotStartedError } from "../../common/errors/EventNotStartedError";
 import { randomFloat } from "../util/randomNumber";
 import { knockEventService } from "../../common/db/knockEventService";
@@ -20,6 +23,9 @@ import { knex } from "../../common/db/client";
 import { Gifty } from "../../common/db/RecordType";
 import { APIEmbedField } from "discord-api-types/v9";
 import { getCandyImageUrl } from "../../common/getCandyImageUrl";
+import { EventEndedError } from "../../common/errors/EventEndedError";
+import { prizeService } from "../../common/db/prizeService";
+import { OutOfPrizesError } from "../../common/errors/OutOfPrizesError";
 
 export const knockCommand = chatCommandHandler(
   HalloweenCommand.Knock,
@@ -33,12 +39,32 @@ export const knockCommand = chatCommandHandler(
     await knex().transaction(async (tx) => {
       const settings = await guildSettingsService.getGuildSettings(guildId, tx);
       // 1. Check if the event is running
-      if (!settings.startDate || settings.startDate > new Date()) {
-        throw new EventNotStartedError({
-          sourceError: new Error(`Event not yet started`),
-          thrownFrom: "knockCommand",
+      const status = guildSettingsService.getEventStatus(settings);
+      if (status === EventStatus.Ended) {
+        throw new EventEndedError({
           startDate: settings.startDate,
           endDate: settings.endDate,
+          sourceError: new Error("Event already ended for guild " + guildId),
+          thrownFrom: "knockCommand",
+          interaction,
+        });
+      } else if (status === EventStatus.NotStartedYet) {
+        throw new EventNotStartedError({
+          startDate: settings.startDate,
+          endDate: settings.endDate,
+          sourceError: new Error("Event not started for guild " + guildId),
+          thrownFrom: "knockCommand",
+          interaction,
+        });
+      }
+
+      // 1a. Check if there are any prizes left to give
+      if (!prizeService.hasInStockPrizes(guildId)) {
+        throw new OutOfPrizesError({
+          sourceError: new Error("No prizes left to give for guild " + guildId),
+          thrownFrom: "knockCommand",
+          interaction,
+          guildId,
         });
       }
 
@@ -51,6 +77,7 @@ export const knockCommand = chatCommandHandler(
       );
       let giftyToUse: Gifty | undefined = undefined;
       if (knockCount >= knocksPerDay) {
+        // no knocks, check for a gifty
         giftyToUse = await giftyService.getNextPendingGifty(
           guildId,
           userId,
@@ -63,6 +90,7 @@ export const knockCommand = chatCommandHandler(
             gifty: giftyToUse,
           });
         } else {
+          // no knocks, no gifties, no dice
           throw new TooManyKnocksError({
             guildId,
             userId,
