@@ -19,7 +19,7 @@ const testGuildId = process.env.TEST_GUILD_ID;
     await bulkWriteGuildCommands(
       token,
       testGuildId,
-      Object.values(commandDefinitions),
+      flattenArray(Object.values(commandDefinitions)),
     );
   } catch (err: any) {
     if (isAxiosError(err)) {
@@ -40,3 +40,15 @@ const testGuildId = process.env.TEST_GUILD_ID;
     }
   }
 })();
+
+function flattenArray<T>(arr: (T | T[])[]): T[] {
+  const result = [];
+  for (const el of arr) {
+    if (Array.isArray(el)) {
+      result.push(...el);
+    } else {
+      result.push(el);
+    }
+  }
+  return result;
+}

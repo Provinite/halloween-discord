@@ -43,14 +43,18 @@ export const listPrizesSubCommand = chatSubcommandHandler(
         .andWhere("currentStock", ">", 0),
     );
 
-    // TODO: Handling for > 25 prizes
+    const baseEmbed = {
+      author: getDiscordEmbedAuthor(),
+      color: Color.Primary,
+      title: "Cloverse Halloween 2021 - Prize List",
+      timestamp: getDiscordEmbedTimestamp(),
+    };
+
+    // TODO: Handling for > 250 prizes
     // TODO: Probably showing at least some images somehow?
     const prizeEmbeds: APIEmbed[] = [
       {
-        author: getDiscordEmbedAuthor(),
-        color: Color.Primary,
-        title: "Cloverse Halloween 2021 - Prize List",
-        timestamp: getDiscordEmbedTimestamp(),
+        ...baseEmbed,
         description:
           "These are the remaining prizes still to go for the event." +
           " Each prize has a different stock and likelyhood of" +
@@ -59,16 +63,37 @@ export const listPrizesSubCommand = chatSubcommandHandler(
         fields: [],
       },
     ];
-    const currentEmbed = prizeEmbeds[0];
+    let prizeIndex = 0;
+    let embedIndex = 0;
+    let prizeImages: string[] = [];
     for (const prize of prizes) {
-      currentEmbed.fields!.push({
+      prizeEmbeds[embedIndex].fields!.push({
         name: prize.name,
         value: `${capitalizeFirstLetter(
           vagueNumberName(prize.currentStock),
-        )} || ${prize.currentStock} || ${randomElement(
-          remainingSynonyms,
-        )} || weight: ${prize.weight} ||`,
+        )} ${randomElement(remainingSynonyms)} || stock ${
+          prize.currentStock
+        } | weight: ${prize.weight} ||`,
       });
+      prizeImages.push(prize.image);
+      // embeds are capped at 25 fields
+      if (
+        (prizeIndex && prizeIndex % 24 === 0) ||
+        prizeIndex === prizes.length - 1
+      ) {
+        prizeEmbeds[embedIndex].image = {
+          url: randomElement(prizeImages),
+        };
+        if (prizeIndex !== prizes.length - 1) {
+          prizeEmbeds.push({
+            ...baseEmbed,
+            fields: [],
+          });
+          embedIndex++;
+          prizeImages = [];
+        }
+      }
+      prizeIndex++;
     }
     await discordService.updateInteractionResponse(interaction, {
       embeds: prizeEmbeds,

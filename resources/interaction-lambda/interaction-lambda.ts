@@ -75,6 +75,8 @@ const actualHandler = async (
         logger.info({
           message: "Launching command lambda!",
         });
+        // Floating promises are okay here
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         lambda
           .invoke({
             FunctionName: envService.getCommandLambdaArn(),

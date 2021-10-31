@@ -20,6 +20,7 @@ import { guildSettingsService } from "../../../common/db/guildSettingsService";
 import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
 import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
 import { Color } from "../../../common/Color";
+import { commandLambdaLogger } from "../../util/commandLambdaLogger";
 
 /**
  * Admin-only command for configuring event settings.
@@ -151,13 +152,26 @@ export const setSettingsSubCommand = chatSubcommandHandler(
       });
     }
 
+    commandLambdaLogger.info({
+      message: "Finished validating, updating settings",
+      updateField: updateField.field,
+      value: valueOption.value,
+    });
+
     await knex().transaction(async (tx) => {
       if (!(await hasGuildSettings(interaction.guild_id, tx))) {
+        commandLambdaLogger.info({
+          message: "No guild settings found. Creating guild settings",
+        });
         await createDefaultGuildSettings(interaction.guild_id, tx);
       }
-      await guildSettingsService.updateGuildSettings(interaction.guild_id, {
-        [updateField.field]: updateField.transform(valueOption.value),
-      });
+      await guildSettingsService.updateGuildSettings(
+        interaction.guild_id,
+        {
+          [updateField.field]: updateField.transform(valueOption.value),
+        },
+        tx,
+      );
       await discordService.updateInteractionResponse(interaction, {
         embeds: [
           {

@@ -8,6 +8,7 @@ import { Runtime, Tracing } from "@aws-cdk/aws-lambda";
 import { Queue } from "@aws-cdk/aws-sqs";
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { SqsEventSource } from "@aws-cdk/aws-lambda-event-sources";
+import { Bucket } from "@aws-cdk/aws-s3";
 import {
   InstanceClass,
   InstanceSize,
@@ -68,6 +69,11 @@ export class HalloweenDiscordService extends Construct {
    */
   databaseInstance: DatabaseInstance;
 
+  /**
+   * S3 Bucket for image storage
+   */
+  imageBucket: Bucket;
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
@@ -79,6 +85,10 @@ export class HalloweenDiscordService extends Construct {
     this.createApiGateway();
     this.createFulfillmentQueues();
     this.createLambdas();
+
+    this.imageBucket = new Bucket(this, "image-bucket", {
+      publicReadAccess: true,
+    });
 
     /**
      * Grants
@@ -226,6 +236,7 @@ export class HalloweenDiscordService extends Construct {
         queue: this.fulfillmentDeadLetterQueue,
         maxReceiveCount: 1,
       },
+      deliveryDelay: Duration.seconds(2),
       receiveMessageWaitTime: Duration.seconds(20),
     });
   }
@@ -258,6 +269,7 @@ export class HalloweenDiscordService extends Construct {
         subnetType: SubnetType.PUBLIC,
       },
       publiclyAccessible: true,
+      enablePerformanceInsights: true,
     });
   }
 

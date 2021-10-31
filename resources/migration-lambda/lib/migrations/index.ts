@@ -4,6 +4,7 @@ import { createPrizeTableMigration } from "./00001-create-prize-table";
 import { createKnockEventTableMigration } from "./00002-create-knock-event-table";
 import { addWinRateMigration } from "./00003-add-winrate-field";
 import { addIsPendingFieldMigration } from "./00004-add-knock-is-pending-field";
+import { createGiftyTableMigration } from "./00005-create-gifty-table";
 
 const migrations: Migration[] = [
   createGuildSettingsMigration,
@@ -11,6 +12,7 @@ const migrations: Migration[] = [
   createKnockEventTableMigration,
   addWinRateMigration,
   addIsPendingFieldMigration,
+  createGiftyTableMigration,
 ];
 
 const migrationsById: Record<string, Migration> = {};

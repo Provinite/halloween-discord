@@ -54,7 +54,7 @@ export class TooManyKnocksError extends DiscordReportableError {
               value: this.config.knocksPerDay.toString(),
             },
             {
-              name: "Reset Time (24h format)",
+              name: "Reset Time",
               value:
                 moment
                   .tz("America/Chicago")
@@ -66,7 +66,8 @@ export class TooManyKnocksError extends DiscordReportableError {
               name: "Last Reset Time",
               value: `${this.config.lastResetTime
                 .tz("America/Chicago")
-                .format("YYYY-MM-DD h:mm:ss a")}`,
+                .format("YYYY-MM-DD h:mm:ss a")
+                .toUpperCase()}`,
             },
           ],
         },

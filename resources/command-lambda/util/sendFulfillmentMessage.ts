@@ -4,7 +4,7 @@ import { captureAWSClient } from "aws-xray-sdk-core";
 import moment = require("moment");
 import { APIChatInputApplicationCommandGuildInteraction } from "discord-api-types/v9";
 import { envService } from "../../common/envService";
-export async function sendFulfillmentMessage(
+export function sendFulfillmentMessage(
   interaction: APIChatInputApplicationCommandGuildInteraction,
   knockEventId: KnockEvent["id"],
 ): Promise<void> {
@@ -14,14 +14,17 @@ export async function sendFulfillmentMessage(
     timestamp: moment().unix(),
     knockEventId,
   };
-  await sqs
+  return sqs
     .sendMessage({
       MessageBody: JSON.stringify(messageBody),
       QueueUrl: envService.getFulfillmentQueueUrl(),
       MessageGroupId: interaction.guild_id,
       MessageDeduplicationId: knockEventId.toString(),
     })
-    .promise();
+    .promise()
+    .then(() => {
+      // noop
+    });
 }
 
 export interface FulfillmentMessageBody {

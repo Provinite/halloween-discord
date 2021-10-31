@@ -44,6 +44,7 @@ export function createMockKnex(): MockKnex {
     }),
     createTable: jest.fn().mockReturnThis(),
   } as any;
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Object.defineProperty(_this, "schema", {
     enumerable: true,
     configurable: true,

@@ -32,7 +32,10 @@ export const guildSettingsService = {
   },
   getLastReset({ resetTime }: GuildSettings): Moment {
     const currentHour = moment.tz("America/Chicago").hour();
-    const todaysReset = moment.tz("America/Chicago").hour(resetTime);
+    const todaysReset = moment
+      .tz("America/Chicago")
+      .hour(resetTime)
+      .startOf("hour");
     if (resetTime > currentHour) {
       // haven't yet reset today, last reset was yesterday
       return todaysReset.subtract(1, "day");
@@ -70,7 +73,7 @@ export const guildSettingsService = {
   ): Promise<GuildSettings> {
     const validationResult = this.validateGuildSettings(guildSettings);
     if (validationResult === true) {
-      await tx(HalloweenTable.Prize).insert(guildSettings);
+      await tx(HalloweenTable.GuildSettings).insert(guildSettings);
       return guildSettings;
     } else {
       throw new ValidationError({

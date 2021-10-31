@@ -27,6 +27,10 @@ export enum HalloweenCommand {
    * Command to get event credits
    */
   Credits = "credits",
+  /**
+   * Command for to be giving gifts yes
+   */
+  Gifty = "gifty",
 }
 
 export const commandStructure = {

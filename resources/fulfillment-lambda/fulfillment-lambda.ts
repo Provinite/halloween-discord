@@ -21,6 +21,8 @@ import {
 import { selectRandomWeightedElement } from "./randomWeightedElement";
 import { guildSettingsService } from "../common/db/guildSettingsService";
 import { TooManyKnocksError } from "../common/errors/TooManyKnocksError";
+import { giftyService } from "../common/db/giftyService";
+import { APIEmbedField } from "discord-api-types/v9";
 
 /**
  * Lambda entry point
@@ -64,53 +66,58 @@ export const handler = async (
 
         // TODO: Move to prizeService method
         await knex().transaction(async (tx) => {
-          const guildSettings = await guildSettingsService.getGuildSettings(
-            interaction.guild_id,
-            tx,
-          );
+          const [guildSettings, gifty] = await Promise.all([
+            guildSettingsService.getGuildSettings(interaction.guild_id, tx),
+            giftyService.getGiftyForKnockEvent(knockEventId, tx),
+          ]);
           const knockCount =
             await knockEventService.getKnockCountSinceLastReset(
               guildSettings,
               interaction.member.user.id,
               tx,
             );
-          if (knockCount > guildSettings.knocksPerDay) {
-            const error = new TooManyKnocksError({
-              guildId: interaction.guild_id,
-              userId: interaction.member.user.id,
-              knocksPerDay: guildSettings.knocksPerDay,
-              lastResetTime: guildSettingsService.getLastReset(guildSettings),
-              resetTime: guildSettings.resetTime,
-              sourceError: new Error(
-                "Pending knock would exceed knocks per day limit during fulfillment.",
-              ),
-              thrownFrom: "fulfillment-lambda",
-              interaction,
-            });
-            fulfillmentLambdaLogger.error({
-              message:
-                "Pending knock would exceed knocks per day if fulfilled. Deleting knock event",
-              error: {
-                message: error.message,
-                config: error.config,
-                name: error.name,
-              },
-            });
-            await knockEventService.deletePendingKnockEvent(knockEventId, tx);
-            fulfillmentLambdaLogger.error({
-              message: "Notifying user of error",
-            });
-            await discordService.updateInteractionResponse(
-              interaction,
-              error.getDiscordResponseBody(),
-            );
+          // if there's an associated gifty for the knock event, we don't need to recertify that this fulfillment is :ok_hand:
+          if (!gifty) {
+            if (knockCount > guildSettings.knocksPerDay) {
+              const error = new TooManyKnocksError({
+                guildId: interaction.guild_id,
+                userId: interaction.member.user.id,
+                knocksPerDay: guildSettings.knocksPerDay,
+                lastResetTime: guildSettingsService.getLastReset(guildSettings),
+                resetTime: guildSettings.resetTime,
+                sourceError: new Error(
+                  "Pending knock would exceed knocks per day limit during fulfillment.",
+                ),
+                thrownFrom: "fulfillment-lambda",
+                interaction,
+              });
+              fulfillmentLambdaLogger.error({
+                message:
+                  "Pending knock would exceed knocks per day if fulfilled. Deleting knock event and notifying user",
+                error: {
+                  message: error.message,
+                  config: error.config,
+                  name: error.name,
+                },
+              });
+              await knockEventService.deletePendingKnockEvent(knockEventId, tx);
+              fulfillmentLambdaLogger.error({
+                message: "Finished deleting knock event.",
+              });
+              await discordService.updateInteractionResponse(
+                interaction,
+                error.getDiscordResponseBody(),
+              );
+              return;
+            }
           }
 
           const prizes = await prizeService.getPrizes(
             (qb) =>
               qb
                 .where({ guildId: interaction.guild_id })
-                .andWhere("currentStock", ">", 0),
+                .andWhere("currentStock", ">", 0)
+                .forUpdate(),
             tx,
           );
           // The prize is selected by weighting the prizes by their current stock * weight
@@ -129,6 +136,36 @@ export const handler = async (
             guildId: interaction.guild_id,
             knockEventId,
           });
+          const fields: APIEmbedField[] = [
+            {
+              name: "Prize",
+              value: prize.name,
+            },
+          ];
+          if (gifty) {
+            fields.push({
+              name: "Knock Gifted By",
+              value: `<@${gifty.fromUserId}> (Go thank them!)`,
+            });
+          }
+          fields.push({
+            name: "Remaining Knocks",
+            // this might be negative
+            value: `${Math.max(0, guildSettings.knocksPerDay - knockCount)}`,
+            inline: true,
+          });
+          fields.push({
+            name: "Banked Gifties",
+            value:
+              "" +
+              (await giftyService.getPendingGiftyCount(
+                interaction.guild_id,
+                interaction.member.user.id,
+                tx,
+              )),
+            inline: true,
+          });
+
           await discordService.updateInteractionResponse(interaction, {
             embeds: [
               {
@@ -137,15 +174,10 @@ export const handler = async (
                 description:
                   "You won! Congratulations on your lovely new prize!",
                 image: {
-                  url: "https://images-ext-1.discordapp.net/external/mM2Q4KZfpfLaTv1whLenvx3Mex81_XI3oi1Z1KQOg38/%3Fpreserve_transparency%3DFalse%26size%3D1200x1200%26size_mode%3D4/https/www.dropbox.com/temp_thumb_from_token/s/al91530liz56fuv?width=590&height=590",
+                  url: prize.image,
                 },
                 color: Color.Primary,
-                fields: [
-                  {
-                    name: "Prize",
-                    value: prize.name,
-                  },
-                ],
+                fields,
               },
             ],
           });
@@ -154,10 +186,11 @@ export const handler = async (
     } catch (e: any) {
       lambdaSegment.close(e);
       throw e;
+    } finally {
+      await closeKnex();
     }
     lambdaSegment.close();
   }
-  await closeKnex();
 };
 // https://dev.to/aws-builders/x-ray-tracing-from-sqs-to-lambda-8md
 function createLambdaSegment(

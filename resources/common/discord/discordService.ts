@@ -1,7 +1,7 @@
 import {
   APIInteraction,
   RESTPatchAPIInteractionOriginalResponseJSONBody,
-} from "discord-api-types";
+} from "discord-api-types/v9";
 import { envService } from "../envService";
 import { getClientCredentialsToken } from "./getClientCredentialsToken";
 import { getInteractionResponse } from "./getInteractionResponse";

@@ -6,10 +6,7 @@
  */
 import "../common/xray/instrumentOutboundHttps";
 
-import {
-  APIApplicationCommandGuildInteraction,
-  MessageFlags,
-} from "discord-api-types/v9";
+import { APIApplicationCommandGuildInteraction } from "discord-api-types/v9";
 import { isGuildInteraction } from "discord-api-types/utils/v9";
 import { helpCommand } from "./commands/helpCommand";
 import { infoCommand } from "./commands/infoCommand";
@@ -24,13 +21,15 @@ import { commandLambdaLogger } from "./util/commandLambdaLogger";
 import { HalloweenDiscordError } from "./errors/HalloweenDiscordError";
 import { closeKnex } from "../common/db/client";
 import { discordService } from "../common/discord/discordService";
-import { DiscordWebhookMessageUnavailableError } from "../common/errors/DiscordWebhookMessageUnavailable";
+import { giftyCommand } from "./commands/giftyCommand";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
 };
 
-export const handler = async (event: CommandLambdaEvent): Promise<void> => {
+export const actualHandler = async (
+  event: CommandLambdaEvent,
+): Promise<void> => {
   await interactionContext.run(event.body, async () => {
     try {
       commandLambdaLogger.info({
@@ -47,6 +46,7 @@ export const handler = async (event: CommandLambdaEvent): Promise<void> => {
           [HalloweenCommand.Prize]: prizeCommand,
           [HalloweenCommand.Settings]: settingsCommand,
           [HalloweenCommand.Credits]: creditsCommand,
+          [HalloweenCommand.Gifty]: giftyCommand,
         } as const;
 
         // before processing, check if the interaction lambda responded in time
@@ -55,27 +55,40 @@ export const handler = async (event: CommandLambdaEvent): Promise<void> => {
           message: "Interaction response received",
           response,
         });
-        if ((response.flags || 0) & MessageFlags.Loading) {
-          const handler = commands[commandName as HalloweenCommand];
-          if (!handler) {
-            throw new HalloweenDiscordError({
-              thrownFrom: "command-lambda",
-              sourceError: new Error(`Unknown command: ${commandName}`),
-              message: `Unknown command, use /help for details`,
-            });
-          }
-          commandLambdaLogger.info({
-            message: "Running command: " + commandName,
+        const handler = commands[commandName as HalloweenCommand];
+        if (!handler) {
+          throw new HalloweenDiscordError({
+            thrownFrom: "command-lambda",
+            sourceError: new Error(`Unknown command: ${commandName}`),
+            message: `Unknown command, use /help for details`,
           });
-          await handler(body);
-        } else {
-          throw new DiscordWebhookMessageUnavailableError(body);
         }
+        commandLambdaLogger.info({
+          message: "Running command: " + commandName,
+        });
+        await handler(body);
+        commandLambdaLogger.info({
+          message: "Finished running command: " + commandName,
+        });
       }
     } catch (error) {
       await errorHandler(error as Error);
     } finally {
+      commandLambdaLogger.info({
+        message: "Closing knex pool",
+      });
       await closeKnex();
     }
   });
+  commandLambdaLogger.info({
+    message: "Interaction context closed",
+  });
 };
+
+export function handler(
+  event: any,
+  ctx: any,
+  callback: (err?: Error) => void,
+): void {
+  actualHandler(event).then(() => callback(), callback);
+}

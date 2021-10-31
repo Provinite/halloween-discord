@@ -146,7 +146,7 @@ export const knockEventService = {
         userId,
       })
       .andWhere("time", ">", lastReset.toDate());
-    return typeof count === "string" ? Number.parseInt(count) : count;
+    return typeof count === "string" ? Number.parseInt(count, 10) : count;
   },
 
   /**

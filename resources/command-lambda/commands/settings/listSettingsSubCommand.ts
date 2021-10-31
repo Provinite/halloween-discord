@@ -20,13 +20,6 @@ export const listSettingsSubCommand = chatSubcommandHandler(
     const settings = await guildSettingsService.getGuildSettings(
       interaction.guild_id,
     );
-    if (!settings) {
-      await discordService.updateInteractionResponse(interaction, {
-        content:
-          "Looks like settings haven't been configured for this server yet",
-      });
-      return;
-    }
 
     await discordService.updateInteractionResponse(interaction, {
       embeds: [
