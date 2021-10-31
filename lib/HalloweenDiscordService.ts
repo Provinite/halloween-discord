@@ -22,6 +22,7 @@ import {
   DatabaseInstanceEngine,
   PostgresEngineVersion,
 } from "@aws-cdk/aws-rds";
+import { BucketDeployment, Source } from "@aws-cdk/aws-s3-deployment";
 
 export class HalloweenDiscordService extends Construct {
   /**
@@ -74,6 +75,11 @@ export class HalloweenDiscordService extends Construct {
    */
   imageBucket: Bucket;
 
+  /**
+   * S3 Bucket deployment for image assets
+   */
+  imageDeployment: BucketDeployment;
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
@@ -88,6 +94,13 @@ export class HalloweenDiscordService extends Construct {
 
     this.imageBucket = new Bucket(this, "image-bucket", {
       publicReadAccess: true,
+      websiteIndexDocument: "manifest.json",
+    });
+
+    this.imageDeployment = new BucketDeployment(this, "image-deployment", {
+      destinationBucket: this.imageBucket,
+      sources: [Source.asset(__dirname + "/../resources/images")],
+      prune: true,
     });
 
     /**
