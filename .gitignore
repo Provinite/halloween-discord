@@ -9,3 +9,5 @@ cdk.out
 
 bin/push-prizes.ts
 bin/prizes.csv
+bin/prizes-old.csv
+yarn-error.log

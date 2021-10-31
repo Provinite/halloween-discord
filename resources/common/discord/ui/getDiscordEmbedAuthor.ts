@@ -1,9 +1,11 @@
+import { randomInt } from "crypto";
 import { APIEmbedAuthor } from "discord-api-types/v9";
+import { envService } from "../../envService";
 
 export function getDiscordEmbedAuthor(): APIEmbedAuthor {
+  const authorIndex = randomInt(0, 11);
   return {
-    name: "Luther",
-    icon_url:
-      "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
+    name: authorIndex > 5 ? "Luther" : "Daphne",
+    icon_url: `${envService.getImageBucketUrl()}icon/${authorIndex}.png`,
   };
 }
