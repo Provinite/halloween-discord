@@ -26,6 +26,7 @@ import {
   APIEmbedField,
   RESTPostAPIChannelMessageJSONBody,
 } from "discord-api-types/v9";
+import { getDiscordEmbedTimestamp } from "../common/discord/ui/getDiscordEmbedTimestamp";
 
 /**
  * Lambda entry point
@@ -188,6 +189,7 @@ export const handler = async (
                 },
                 color: Color.Primary,
                 fields,
+                timestamp: getDiscordEmbedTimestamp(),
               },
             ],
           };
