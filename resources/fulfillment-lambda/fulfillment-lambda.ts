@@ -22,7 +22,10 @@ import { selectRandomWeightedElement } from "./randomWeightedElement";
 import { guildSettingsService } from "../common/db/guildSettingsService";
 import { TooManyKnocksError } from "../common/errors/TooManyKnocksError";
 import { giftyService } from "../common/db/giftyService";
-import { APIEmbedField } from "discord-api-types/v9";
+import {
+  APIEmbedField,
+  RESTPostAPIChannelMessageJSONBody,
+} from "discord-api-types/v9";
 
 /**
  * Lambda entry point
@@ -165,8 +168,15 @@ export const handler = async (
               )),
             inline: true,
           });
+          fields.push({
+            name: "Winner",
+            value: `<@${interaction.member.user.id}>`,
+          });
 
-          await discordService.updateInteractionResponse(interaction, {
+          const message: RESTPostAPIChannelMessageJSONBody = {
+            allowed_mentions: {
+              users: [interaction.member.user.id],
+            },
             embeds: [
               {
                 author: getDiscordEmbedAuthor(),
@@ -180,7 +190,15 @@ export const handler = async (
                 fields,
               },
             ],
-          });
+          };
+
+          await discordService.updateInteractionResponse(interaction, message);
+          if (guildSettings.winChannel) {
+            await discordService.sendChannelMessage(
+              guildSettings.winChannel,
+              message,
+            );
+          }
         });
       });
     } catch (e: any) {

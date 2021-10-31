@@ -121,6 +121,12 @@ export const setSettingsSubCommand = chatSubcommandHandler(
         validate: (s) => /^[0-9]*(\.[0-9]+)?$/.test(s),
         transform: (s) => Number.parseFloat(s),
       }),
+      win_channel: field({
+        field: "winChannel",
+        // a numeric string
+        validate: (s) => /^\d+$/.test(s),
+        transform: (s) => s,
+      }),
     } as const;
 
     const selectedField = fieldOption.value;

@@ -59,6 +59,10 @@ export const listSettingsSubCommand = chatSubcommandHandler(
                     .toUpperCase()
                 : "None",
             },
+            {
+              name: "Win Channel",
+              value: settings.winChannel ? `<#${settings.winChannel}>` : "None",
+            },
           ],
         },
       ],

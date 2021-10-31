@@ -84,6 +84,10 @@ export const commandDefinitions: Record<
                 name: "Win Rate",
                 value: "win_rate",
               },
+              {
+                name: "Win Channel",
+                value: "win_channel",
+              },
             ],
             required: true,
           },

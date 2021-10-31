@@ -25,6 +25,7 @@ export interface GuildSettings {
   startDate: Date | null;
   endDate: Date | null;
   winRate: number;
+  winChannel: string | null;
 }
 
 export interface Gifty {
