@@ -19,6 +19,7 @@ import { giftyService } from "../../common/db/giftyService";
 import { knex } from "../../common/db/client";
 import { Gifty } from "../../common/db/RecordType";
 import { APIEmbedField } from "discord-api-types/v9";
+import { getCandyImageUrl } from "../../common/getCandyImageUrl";
 
 export const knockCommand = chatCommandHandler(
   HalloweenCommand.Knock,
@@ -141,6 +142,7 @@ export const knockCommand = chatCommandHandler(
               author: getDiscordEmbedAuthor(),
               timestamp: getDiscordEmbedTimestamp(),
               color: Color.Primary,
+              image: { url: getCandyImageUrl() },
               footer: {
                 text: "Come back soon!",
               },

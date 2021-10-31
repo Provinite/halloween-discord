@@ -86,22 +86,12 @@ export class HalloweenDiscordService extends Construct {
     /**
      * Resources
      */
+    this.createStaticImageHosting();
     this.createVpc();
     this.createRdsPostgres();
     this.createApiGateway();
     this.createFulfillmentQueues();
     this.createLambdas();
-
-    this.imageBucket = new Bucket(this, "image-bucket", {
-      publicReadAccess: true,
-      websiteIndexDocument: "manifest.json",
-    });
-
-    this.imageDeployment = new BucketDeployment(this, "image-deployment", {
-      destinationBucket: this.imageBucket,
-      sources: [Source.asset(__dirname + "/../resources/images")],
-      prune: true,
-    });
 
     /**
      * Grants
@@ -137,6 +127,19 @@ export class HalloweenDiscordService extends Construct {
     );
   }
 
+  private createStaticImageHosting(): void {
+    this.imageBucket = new Bucket(this, "image-bucket", {
+      publicReadAccess: true,
+      websiteIndexDocument: "manifest.json",
+    });
+
+    this.imageDeployment = new BucketDeployment(this, "image-deployment", {
+      destinationBucket: this.imageBucket,
+      sources: [Source.asset(__dirname + "/../resources/images")],
+      prune: true,
+    });
+  }
+
   /**
    * Create all lambdas for the construct.
    */
@@ -161,6 +164,7 @@ export class HalloweenDiscordService extends Construct {
         DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
         NODE_OPTIONS: "--enable-source-maps",
+        IMAGE_BUCKET_URL: this.imageBucket.bucketWebsiteUrl,
       },
       tracing: Tracing.PASS_THROUGH,
       timeout: Duration.seconds(30),
@@ -209,6 +213,7 @@ export class HalloweenDiscordService extends Construct {
             process.env.cchdiscord_discord_client_secret || "",
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           DB_SECRET_JSON: this.databaseInstance.secret!.secretValue.toString(),
+          IMAGE_BUCKET_URL: this.imageBucket.bucketWebsiteUrl,
         },
         timeout: Duration.seconds(30),
         tracing: Tracing.PASS_THROUGH,

@@ -9,6 +9,12 @@ export const envService = {
   getDiscordApplicationId: requiredEnvGetter("DISCORD_APPLICATION_ID"),
   getFulfillmentQueueUrl: requiredEnvGetter("FULFILLMENT_QUEUE_URL"),
   getDiscordBotToken: requiredEnvGetter("DISCORD_BOT_TOKEN"),
+  getImageBucketUrl: requiredEnvGetter("IMAGE_BUCKET_URL", (s) => {
+    if (!s.endsWith("/")) {
+      s = s + "/";
+    }
+    return s;
+  }),
 };
 
 function requiredEnvGetter(envKey: string): () => string;
