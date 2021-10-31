@@ -2,27 +2,27 @@
  * @module
  * @description Handler for the /help command
  */
-import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
-import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
-import { hexStringToInt } from "../../common/hexStringToInt";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
+import { Color } from "../../common/Color";
+import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
+import { discordService } from "../../common/discord/discordService";
 
 export const helpCommand = chatCommandHandler(
   HalloweenCommand.Help,
   async (interaction) => {
-    const token = await getClientCredentialsToken();
-    await updateInteractionResponse(token, interaction.token, {
+    await discordService.updateInteractionResponse(interaction, {
       embeds: [
         {
+          // TODO: Common embed format
           author: {
             name: "Luther",
             icon_url:
               "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
           },
-          color: hexStringToInt("EB6123"),
+          color: Color.Primary,
           title: "Cloverse Halloween 2021 - How to Participate",
-          timestamp: new Date().toISOString(),
+          timestamp: getDiscordEmbedTimestamp(),
           fields: [
             {
               name: "Trick or Treat",

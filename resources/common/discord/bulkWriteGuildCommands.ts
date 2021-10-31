@@ -5,6 +5,13 @@ import {
 } from "discord-api-types/v9";
 import { envService } from "../envService";
 
+/**
+ * Bulk overwrite discord application commands for a guild.
+ * @param token Discord client credentials token.
+ * @param guildId Discord guild id.
+ * @param bodies Array of command bodies.
+ * @returns Promise that resolves to the response.
+ */
 export async function bulkWriteGuildCommands(
   token: string,
   guildId: string,

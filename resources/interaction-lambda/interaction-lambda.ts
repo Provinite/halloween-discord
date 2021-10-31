@@ -1,4 +1,8 @@
-import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import { getHeader } from "./getHeader";
 import { SignatureHeaders } from "./SignatureHeaders";
 import { apiGatewayResult } from "../common/lambda/apiGatewayResult";
@@ -16,18 +20,28 @@ import { parseBody } from "../common/lambda/parseBody";
 import { isApplicationCommandInteraction } from "./discord/isApplicationCommandInteraction";
 import { Lambda } from "aws-sdk";
 import { envService } from "../common/envService";
+import { logger } from "../common/Logger";
+import { captureAWSClient } from "aws-xray-sdk-core";
+const lambda = captureAWSClient(new Lambda());
 
-const lambda = new Lambda();
-
-export const handler: APIGatewayProxyHandler = async (
-  event,
+const actualHandler = async (
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  logger.info({
+    source: "interaction-lambda",
+    message: "Lambda invoked",
+    event,
+  });
+
   const signature = getHeader(event.headers, SignatureHeaders.Signature);
   const timestamp = getHeader(event.headers, SignatureHeaders.Timestamp);
   const rawBody = event.body || "";
 
   // Verify signature
   if (!verifyDiscordInteraction(timestamp, rawBody, signature)) {
+    logger.error({
+      message: "Invalid request signature",
+    });
     return apiGatewayResult({
       statusCode: 401,
       body: {
@@ -57,22 +71,28 @@ export const handler: APIGatewayProxyHandler = async (
     });
   } else if (isApplicationCommandInteraction(body)) {
     if (isApplicationCommandGuildInteraction(body)) {
-      await lambda
-        .invoke({
-          FunctionName: envService.getCommandLambdaArn(),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          Payload: JSON.stringify({ body }),
-          InvocationType: "Event",
-        })
-        .promise();
+      setTimeout(() => {
+        logger.info({
+          message: "Launching command lambda!",
+        });
+        // Floating promises are okay here
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        lambda
+          .invoke({
+            FunctionName: envService.getCommandLambdaArn(),
+            Payload: JSON.stringify({ body }),
+            InvocationType: "Event",
+          })
+          .promise()
+          .then(() => {
+            logger.info("Command lambda successfully fired");
+          });
+      });
       return apiGatewayResult<APIInteractionResponseDeferredChannelMessageWithSource>(
         {
           statusCode: 200,
           body: {
             type: InteractionResponseType.DeferredChannelMessageWithSource,
-            data: {
-              flags: MessageFlags.Ephemeral,
-            },
           },
         },
       );
@@ -98,4 +118,40 @@ export const handler: APIGatewayProxyHandler = async (
       },
     });
   }
+};
+
+/**
+ * This must be a non-async handler to allow for the use of setTimeout to invoke the
+ * command lambda AFTER returning the API response. Async handlers end immediately upon returning.
+ * https://docs.aws.amazon.com/lambda/latest/dg/nodejs-handler.html
+ * @param event
+ * @param context
+ * @param callback
+ */
+export const handler = (
+  event: APIGatewayProxyEvent,
+  context: Context,
+  callback: (error: Error | null, result?: APIGatewayProxyResult) => void,
+): void => {
+  new Promise<APIGatewayProxyResult>((resolve, reject) => {
+    actualHandler(event).then((result) => {
+      logger.info({
+        source: "interaction-lambda",
+        message: "Lambda completed",
+        result,
+      });
+      resolve(result);
+    }, reject);
+  }).then(
+    (result) => {
+      callback(null, result);
+    },
+    (err) => {
+      logger.error({
+        message: "Error during invocation",
+        error: err,
+      });
+      callback(err);
+    },
+  );
 };

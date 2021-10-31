@@ -2,33 +2,45 @@
  * @module
  * @description Handler for the /credits command
  */
-import { getClientCredentialsToken } from "../../common/discord/getClientCredentialsToken";
-import { updateInteractionResponse } from "../../common/discord/updateInteractionResponse";
-import { hexStringToInt } from "../../common/hexStringToInt";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
 import { chatCommandHandler } from "./handlers/chatCommandHandler";
-import { APIEmbedField } from "discord-api-types";
+import { APIEmbedField } from "discord-api-types/v9";
+import { commandLambdaLogger } from "../util/commandLambdaLogger";
+import { getDiscordEmbedTimestamp } from "../../common/discord/ui/getDiscordEmbedTimestamp";
+import { discordService } from "../../common/discord/discordService";
+import { Color } from "../../common/Color";
+import { getDiscordEmbedAuthor } from "../../common/discord/ui/getDiscordEmbedAuthor";
 
 export const creditsCommand = chatCommandHandler(
   HalloweenCommand.Credits,
   async (interaction) => {
-    const token = await getClientCredentialsToken();
-
-    let credits = [
-      { name: "A2J", credit: "Biiiig brains" },
-      { name: "Provinite", credit: "OK brains, biiiiig attitude" },
+    const credits = [
+      { name: "A2J", credit: "Artwork, Planning" },
+      { name: "Provinite", credit: "Software, Planning" },
       {
-        name: "Dimmy",
-        credit: "Brains: [] | Attitude: [] | Dimmy: [x]",
+        name: "Pesky Potato",
+        credit: "Software",
+      },
+      {
+        name: "EmmyGoat",
+        credit: "TODO",
+      },
+      {
+        name: "SpiritBurn",
+        credit: "TODO",
+      },
+      {
+        name: "PeaBandJ",
+        credit: "TODO",
       },
     ];
 
     /**
      * Array for dynamic credit generation. Every third element should be our special "empty" inline element.
      */
-    let fields: APIEmbedField[] = [];
+    const fields: APIEmbedField[] = [];
     for (let i = 0; i < credits.length; i++) {
-      let field: APIEmbedField = {
+      const field: APIEmbedField = {
         name: credits[i].name,
         value: credits[i].credit,
         inline: true,
@@ -39,17 +51,17 @@ export const creditsCommand = chatCommandHandler(
       }
     }
 
-    await updateInteractionResponse(token, interaction.token, {
+    commandLambdaLogger.info({
+      message: "Sending credits response",
+    });
+
+    await discordService.updateInteractionResponse(interaction, {
       embeds: [
         {
-          author: {
-            name: "Luther",
-            icon_url:
-              "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
-          },
-          color: hexStringToInt("EB6123"),
+          author: getDiscordEmbedAuthor(),
+          color: Color.Primary,
           title: "Cloverse Halloween 2021 - Credits",
-          timestamp: new Date().toISOString(),
+          timestamp: getDiscordEmbedTimestamp(),
           fields,
         },
       ],

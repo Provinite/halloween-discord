@@ -1,75 +1,106 @@
-import { knex } from "../../../common/db/client";
-import { Prize } from "../../../common/db/RecordType";
-import { HalloweenTable } from "../../../common/db/TableName";
-import { getClientCredentialsToken } from "../../../common/discord/getClientCredentialsToken";
 import {
   commandStructure,
   HalloweenCommand,
 } from "../../../common/discord/HalloweenCommand";
 import { APIEmbed } from "discord-api-types/v9";
-import { updateInteractionResponse } from "../../../common/discord/updateInteractionResponse";
 import { chatSubcommandHandler } from "../handlers/chatSubcommandHandler";
 import { vagueNumberName } from "../../util/vagueNumberName";
-import { hexStringToInt } from "../../../common/hexStringToInt";
 import { randomElement } from "../../util/randomElement";
+import { prizeService } from "../../../common/db/prizeService";
+import { Color } from "../../../common/Color";
+import { getDiscordEmbedTimestamp } from "../../../common/discord/ui/getDiscordEmbedTimestamp";
+import { discordService } from "../../../common/discord/discordService";
+import { getDiscordEmbedAuthor } from "../../../common/discord/ui/getDiscordEmbedAuthor";
 
 const remainingSynonyms = [
   "remaining",
   "left",
   "to go",
   "eagerly awaiting delivery",
-  "more to trick",
   "left to treat",
   "still to be won",
+  "still in the back room",
+  "left in the closet",
+  "tucked away under the cupboard",
+  "left in reserve",
+  "waiting for a home",
 ];
 
+/**
+ * Subcommand for listing all prizes.
+ * @example
+ * list
+ */
 export const listPrizesSubCommand = chatSubcommandHandler(
   {
     subCommandName: commandStructure[HalloweenCommand.Prize].List,
     requiredPermissions: null,
   },
   async (subCommand, interaction) => {
-    const prizes = await knex(HalloweenTable.Prize)
-      .select<Prize[]>("*")
-      .where({ guildId: interaction.guild_id })
-      .andWhere("currentStock", ">", 0);
+    const prizes = await prizeService.getPrizes((qb) =>
+      qb
+        .where({ guildId: interaction.guild_id })
+        .andWhere("currentStock", ">", 0),
+    );
 
-    // TODO: Handling for > 25 prizes
-    // TODO: Probably showing images somehow?
+    const baseEmbed = {
+      author: getDiscordEmbedAuthor(),
+      color: Color.Primary,
+      title: "Cloverse Halloween 2021 - Prize List",
+      timestamp: getDiscordEmbedTimestamp(),
+    };
+
+    // TODO: Handling for > 250 prizes
+    // TODO: Probably showing at least some images somehow?
     const prizeEmbeds: APIEmbed[] = [
       {
-        author: {
-          name: "Luther",
-          icon_url:
-            "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
-        },
-        color: hexStringToInt("EB6123"),
-        title: "Cloverse Halloween 2021 - Prize List",
-        timestamp: new Date().toISOString(),
+        ...baseEmbed,
         description:
           "These are the remaining prizes still to go for the event." +
           " Each prize has a different stock and likelyhood of" +
-          " being given out per-win. We intend to give out all of" +
+          " being given out (weight) per win. We intend to give out all of" +
           " the prizes before the event ends!",
         fields: [],
       },
     ];
-    const currentEmbed = prizeEmbeds[0];
+    let prizeIndex = 0;
+    let embedIndex = 0;
+    let prizeImages: string[] = [];
     for (const prize of prizes) {
-      currentEmbed.fields!.push({
+      prizeEmbeds[embedIndex].fields!.push({
         name: prize.name,
-        inline: true,
-        value: `${vagueNumberName(prize.currentStock)} ${randomElement(
-          remainingSynonyms,
-        )}`,
+        value: `${capitalizeFirstLetter(
+          vagueNumberName(prize.currentStock),
+        )} ${randomElement(remainingSynonyms)} || stock ${
+          prize.currentStock
+        } | weight: ${prize.weight} ||`,
       });
+      prizeImages.push(prize.image);
+      // embeds are capped at 25 fields
+      if (
+        (prizeIndex && prizeIndex % 24 === 0) ||
+        prizeIndex === prizes.length - 1
+      ) {
+        prizeEmbeds[embedIndex].image = {
+          url: randomElement(prizeImages),
+        };
+        if (prizeIndex !== prizes.length - 1) {
+          prizeEmbeds.push({
+            ...baseEmbed,
+            fields: [],
+          });
+          embedIndex++;
+          prizeImages = [];
+        }
+      }
+      prizeIndex++;
     }
-    await updateInteractionResponse(
-      await getClientCredentialsToken(),
-      interaction.token,
-      {
-        embeds: prizeEmbeds,
-      },
-    );
+    await discordService.updateInteractionResponse(interaction, {
+      embeds: prizeEmbeds,
+    });
   },
 );
+
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

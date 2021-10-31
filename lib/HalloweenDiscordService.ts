@@ -8,6 +8,7 @@ import { Runtime, Tracing } from "@aws-cdk/aws-lambda";
 import { Queue } from "@aws-cdk/aws-sqs";
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { SqsEventSource } from "@aws-cdk/aws-lambda-event-sources";
+import { Bucket } from "@aws-cdk/aws-s3";
 import {
   InstanceClass,
   InstanceSize,
@@ -21,6 +22,7 @@ import {
   DatabaseInstanceEngine,
   PostgresEngineVersion,
 } from "@aws-cdk/aws-rds";
+import { BucketDeployment, Source } from "@aws-cdk/aws-s3-deployment";
 
 export class HalloweenDiscordService extends Construct {
   /**
@@ -68,12 +70,23 @@ export class HalloweenDiscordService extends Construct {
    */
   databaseInstance: DatabaseInstance;
 
+  /**
+   * S3 Bucket for image storage
+   */
+  imageBucket: Bucket;
+
+  /**
+   * S3 Bucket deployment for image assets
+   */
+  imageDeployment: BucketDeployment;
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
     /**
      * Resources
      */
+    this.createStaticImageHosting();
     this.createVpc();
     this.createRdsPostgres();
     this.createApiGateway();
@@ -84,7 +97,7 @@ export class HalloweenDiscordService extends Construct {
      * Grants
      */
     // SQS access
-    this.fulfillmentQueue.grantSendMessages(this.interactionLambda);
+    this.fulfillmentQueue.grantSendMessages(this.commandLambda);
     // Lambda access
     this.commandLambda.grantInvoke(this.interactionLambda);
 
@@ -109,9 +122,22 @@ export class HalloweenDiscordService extends Construct {
       "POST",
       new LambdaIntegration(this.interactionLambda, {
         allowTestInvoke: false,
-        timeout: Duration.seconds(3),
+        timeout: Duration.seconds(10),
       }),
     );
+  }
+
+  private createStaticImageHosting(): void {
+    this.imageBucket = new Bucket(this, "image-bucket", {
+      publicReadAccess: true,
+      websiteIndexDocument: "manifest.json",
+    });
+
+    this.imageDeployment = new BucketDeployment(this, "image-deployment", {
+      destinationBucket: this.imageBucket,
+      sources: [Source.asset(__dirname + "/../resources/images")],
+      prune: true,
+    });
   }
 
   /**
@@ -134,11 +160,14 @@ export class HalloweenDiscordService extends Construct {
           process.env.cchdiscord_discord_application_id || "",
         DISCORD_CLIENT_SECRET:
           process.env.cchdiscord_discord_client_secret || "",
+        DISCORD_BOT_TOKEN: process.env.cchdiscord_discord_bot_token || "",
         DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
         FULFILLMENT_QUEUE_URL: this.fulfillmentQueue.queueUrl,
         NODE_OPTIONS: "--enable-source-maps",
+        IMAGE_BUCKET_URL: this.imageBucket.bucketWebsiteUrl,
       },
       tracing: Tracing.PASS_THROUGH,
+      timeout: Duration.seconds(30),
     });
 
     this.interactionLambda = new NodejsFunction(
@@ -159,7 +188,7 @@ export class HalloweenDiscordService extends Construct {
           COMMAND_LAMBDA_ARN: this.commandLambda.functionArn,
         },
         description: "Interaction lambda",
-        timeout: Duration.seconds(3),
+        timeout: Duration.seconds(30),
         tracing: Tracing.ACTIVE,
       },
     );
@@ -177,14 +206,17 @@ export class HalloweenDiscordService extends Construct {
           sourceMap: true,
         },
         environment: {
+          DISCORD_BOT_TOKEN: process.env.cchdiscord_discord_bot_token || "",
           DISCORD_APPLICATION_ID:
             process.env.cchdiscord_discord_application_id || "",
           DISCORD_CLIENT_SECRET:
             process.env.cchdiscord_discord_client_secret || "",
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           DB_SECRET_JSON: this.databaseInstance.secret!.secretValue.toString(),
+          IMAGE_BUCKET_URL: this.imageBucket.bucketWebsiteUrl,
         },
-        tracing: Tracing.ACTIVE,
+        timeout: Duration.seconds(30),
+        tracing: Tracing.PASS_THROUGH,
       },
     );
 
@@ -222,6 +254,7 @@ export class HalloweenDiscordService extends Construct {
         queue: this.fulfillmentDeadLetterQueue,
         maxReceiveCount: 1,
       },
+      deliveryDelay: Duration.seconds(2),
       receiveMessageWaitTime: Duration.seconds(20),
     });
   }
@@ -254,6 +287,7 @@ export class HalloweenDiscordService extends Construct {
         subnetType: SubnetType.PUBLIC,
       },
       publiclyAccessible: true,
+      enablePerformanceInsights: true,
     });
   }
 

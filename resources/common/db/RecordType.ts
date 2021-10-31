@@ -1,3 +1,4 @@
+import { userIdType } from "aws-sdk/clients/sts";
 import { HalloweenTable } from "./TableName";
 
 export interface KnockEvent {
@@ -5,7 +6,8 @@ export interface KnockEvent {
   guildId: string;
   userId: string;
   time: Date;
-  prizeId: string;
+  prizeId: string | null;
+  isPending: boolean;
 }
 export interface Prize {
   id: string;
@@ -22,6 +24,20 @@ export interface GuildSettings {
   knocksPerDay: number;
   startDate: Date | null;
   endDate: Date | null;
+  winRate: number;
+  winChannel: string | null;
+}
+
+export interface Gifty {
+  id: number;
+  guildId: string;
+  time: Date;
+  fromUserId: userIdType;
+  toUserId: userIdType;
+  /**
+   * The knock event that fulfills this gifty. Null if the gifty is pending.
+   */
+  knockEventId: number | null;
 }
 
 export interface Migration {
@@ -34,6 +50,7 @@ interface RecordKinds {
   [HalloweenTable.KnockEvent]: KnockEvent;
   [HalloweenTable.Prize]: Prize;
   [HalloweenTable.Migrations]: Migration;
+  [HalloweenTable.Gifty]: Gifty;
 }
 
 export type RecordType<T extends HalloweenTable> = RecordKinds[T];

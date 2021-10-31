@@ -4,6 +4,7 @@ import {
 } from "discord-api-types/v9";
 import { isGuildChatCommandInteraction } from "../../../common/discord/isChatCommandInteraction";
 import { HalloweenCommand } from "../../../common/discord/HalloweenCommand";
+import { HalloweenDiscordError } from "../../errors/HalloweenDiscordError";
 
 /**
  * Create a command handler for the provided command.
@@ -20,18 +21,26 @@ export function chatCommandHandler<T extends HalloweenCommand>(
     interaction: APIApplicationCommandGuildInteraction,
   ): Promise<void> => {
     if (interaction.data.name.toLowerCase() !== command) {
-      // TODO: Error handling
-      throw new Error(
-        `Command Handler: Expected command "${command}", got "${interaction.data.name}"`,
-      );
+      throw new HalloweenDiscordError({
+        thrownFrom: "chatCommandHandler",
+        message: `Something went wrong while handling your interaction. ERR_UNEXPECTED_COMMAND`,
+        interaction,
+        sourceError: new Error(
+          `Received unexpected command in ${command} chat command handler. Command ${interaction.data.name} was routed mistakenly to it.`,
+        ),
+      });
     }
     if (isGuildChatCommandInteraction(interaction)) {
       return handler(interaction);
     } else {
-      // TODO: Error handling
-      throw new Error(
-        `Command Handler: Expected CHAT command, got something else.`,
-      );
+      throw new HalloweenDiscordError({
+        thrownFrom: "chatCommandHandler",
+        message: `Something went wrong while handling your interaction. ERR_UNEXPECTED_INTERACTION_KIND`,
+        interaction,
+        sourceError: new Error(
+          `Received unexpected command in ${command} chat command handler. Expected a guild chat command, but got something else.`,
+        ),
+      });
     }
   };
 }

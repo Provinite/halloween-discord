@@ -5,9 +5,11 @@ import {
 } from "discord-api-types/v9";
 import { HalloweenCommand } from "./HalloweenCommand";
 
+type MaybeArray<T> = T | T[];
+
 export const commandDefinitions: Record<
   HalloweenCommand,
-  RESTPostAPIApplicationGuildCommandsJSONBody
+  MaybeArray<RESTPostAPIApplicationGuildCommandsJSONBody>
 > = {
   /**
    * /knock
@@ -77,6 +79,14 @@ export const commandDefinitions: Record<
               {
                 name: "End Date",
                 value: "end_date",
+              },
+              {
+                name: "Win Rate",
+                value: "win_rate",
+              },
+              {
+                name: "Win Channel",
+                value: "win_channel",
               },
             ],
             required: true,
@@ -193,4 +203,28 @@ export const commandDefinitions: Record<
       },
     ],
   },
+  /**
+   * "gifty" user command
+   * /gifty @user
+   */
+  [HalloweenCommand.Gifty]: [
+    {
+      name: "gifty",
+      type: ApplicationCommandType.User,
+    },
+    {
+      name: "gifty",
+      description:
+        "Send someone an extra knock to use. (This does not cost you a knock)",
+      type: ApplicationCommandType.ChatInput,
+      options: [
+        {
+          type: ApplicationCommandOptionType.User,
+          required: true,
+          name: "user",
+          description: "The user to send a gifty to",
+        },
+      ],
+    },
+  ],
 };

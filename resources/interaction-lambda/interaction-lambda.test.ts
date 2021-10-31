@@ -149,15 +149,8 @@ async function callHandlerSigned(
 
 async function callHandler(
   event: Partial<APIGatewayProxyEvent> = {},
-  context: Partial<Context> = {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  callback: () => void = () => {},
 ): Promise<APIGatewayProxyResult> {
-  const result = await handler(
-    gatewayEvent(event),
-    lambdaContext(context),
-    callback,
-  );
+  const result = await handler(gatewayEvent(event));
 
   expect(result).toBeTruthy();
   expect(typeof result).toBe("object");

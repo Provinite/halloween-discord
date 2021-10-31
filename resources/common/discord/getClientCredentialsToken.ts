@@ -1,19 +1,20 @@
 import axios, { AxiosResponse } from "axios";
+import { OAuth2Scopes } from "discord-api-types/v9";
 import { RESTPostOAuth2ClientCredentialsResult } from "discord-api-types/rest/v9";
 import { URLSearchParams } from "url";
 import { isAxiosError } from "../axios/isAxiosError";
 import { envService } from "../envService";
-import { logger } from "../log";
+import { logger } from "../Logger";
 
-// PERF: Reusing tokens would be smart. Maybe through SSM?
-// At the very least, store it for warm invocations
-export async function getClientCredentialsToken(): Promise<string> {
+export async function getClientCredentialsToken(
+  scopes: OAuth2Scopes[] = [OAuth2Scopes.Identify],
+): Promise<string> {
   const appId = envService.getDiscordApplicationId();
   const secret = envService.getDiscordClientSecret();
 
   const data = new URLSearchParams();
   data.append("grant_type", "client_credentials");
-  data.append("scope", "identify");
+  data.append("scope", scopes.join(" "));
   // TODO: Make a bot for this
   let response: AxiosResponse<RESTPostOAuth2ClientCredentialsResult>;
   try {

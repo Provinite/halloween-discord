@@ -5,11 +5,11 @@ import {
 } from "discord-api-types/v9";
 import { isAxiosError } from "../axios/isAxiosError";
 import { envService } from "../envService";
-import { logger } from "../log";
+import { logger } from "../Logger";
 
 /**
  * @see https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response
- * @param authToken A bearer token for authorizing the call.
+ * @param authToken A bot token for authorizing the call.
  * @param interactionToken The interaction token supplied with the initial webhook call
  * @param body The PATCH body
  * @returns
@@ -19,9 +19,11 @@ export async function updateInteractionResponse(
   interactionToken: string,
   body: RESTPatchAPIInteractionOriginalResponseJSONBody,
 ): Promise<RESTPatchAPIInteractionOriginalResponseResult> {
+  // TODO: Logger context
   const appId = envService.getDiscordApplicationId();
+
   try {
-    const authHeader = `Bearer ${authToken}`;
+    const authHeader = `Bot ${authToken}`;
     const response = await axios.patch<
       RESTPatchAPIInteractionOriginalResponseJSONBody,
       AxiosResponse<RESTPatchAPIInteractionOriginalResponseResult>

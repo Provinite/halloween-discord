@@ -1,17 +1,20 @@
-import { Knex } from "knex";
 import { knex } from "../client";
+import { guildSettingsService } from "../guildSettingsService";
 import { GuildSettings } from "../RecordType";
-import { HalloweenTable } from "../TableName";
 
 export function createDefaultGuildSettings(
   guildId: string,
-  knx = knex(),
-): Knex.QueryBuilder<GuildSettings> {
-  return knx<GuildSettings>(HalloweenTable.GuildSettings).insert({
-    guildId,
-    endDate: null,
-    knocksPerDay: 2,
-    resetTime: 6,
-    startDate: null,
-  });
+  tx = knex(),
+): Promise<GuildSettings> {
+  return guildSettingsService.saveGuildSettings(
+    {
+      guildId,
+      endDate: null,
+      knocksPerDay: 2,
+      resetTime: 6,
+      startDate: null,
+      winRate: 0.5,
+    },
+    tx,
+  );
 }

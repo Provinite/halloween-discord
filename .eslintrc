@@ -27,9 +27,16 @@
         "allowArgumentsExplicitlyTypedAsAny": true
       }
     ],
+    "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-non-null-assertion": ["off"]
   },
   "overrides": [
+    {
+      "files": ["*.ts","*.js"],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    },
     {
       "files": ["*.test.ts"],
       "rules": {
