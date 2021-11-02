@@ -2,6 +2,7 @@ import {
   APIChatInputApplicationCommandGuildInteraction,
   APIUserApplicationCommandGuildInteraction,
   ApplicationCommandOptionType,
+  PermissionFlagsBits,
 } from "discord-api-types/v9";
 import { Color } from "../../common/Color";
 import { knex } from "../../common/db/client";
@@ -11,6 +12,7 @@ import {
 } from "../../common/db/giftyService";
 import { discordService } from "../../common/discord/discordService";
 import { HalloweenCommand } from "../../common/discord/HalloweenCommand";
+import { hasPermissionFlag } from "../../common/discord/hasPermissionFlag";
 import { isGuildChatCommandInteraction } from "../../common/discord/isChatCommandInteraction";
 import { isUserGuildCommandInteraction } from "../../common/discord/isUserGuildCommandInteraction";
 import { getDiscordEmbedAuthor } from "../../common/discord/ui/getDiscordEmbedAuthor";
@@ -38,6 +40,12 @@ export const giftyCommand = chatOrUserCommandHandler(
             guildId,
             fromUserId,
             toUserId,
+          },
+          {
+            rateLimit: !hasPermissionFlag(
+              interaction.member.permissions,
+              PermissionFlagsBits.Administrator,
+            ),
           },
           tx,
         );

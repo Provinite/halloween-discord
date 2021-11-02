@@ -48,14 +48,24 @@ export const giftyService = {
   /**
    * Save a new gifty to the database
    * @param gifty
+   * @param options
+   * @param options.rateLimit=true If false, don't rate limit gifty creation. Useful for testing or administrative purposes.
    * @param tx
    * @returns The newly created gifty
    */
   async saveGifty(
     gifty: Omit<Gifty, "time" | "id" | "knockEventId">,
+    options = { rateLimit: true },
     tx = knex(),
   ): Promise<Gifty> {
-    const validationResult = await this.validateGiftyForCreate(gifty, tx);
+    if (options.rateLimit === undefined) {
+      options.rateLimit = true;
+    }
+    const validationResult = await this.validateGiftyForCreate(
+      gifty,
+      options,
+      tx,
+    );
     if (validationResult === true) {
       const [result] = await tx<Gifty, Gifty[]>(HalloweenTable.Gifty)
         .insert(gifty)
@@ -73,6 +83,7 @@ export const giftyService = {
 
   async validateGiftyForCreate(
     gifty: SetOptional<Gifty, "time" | "id" | "knockEventId">,
+    options = { rateLimit: true },
     tx = knex(),
   ): Promise<true | { field: string; error: string }[]> {
     const rules: [
@@ -109,6 +120,9 @@ export const giftyService = {
         "*",
         "Each user may only send one gifty per reset",
         async () => {
+          if (options.rateLimit === false) {
+            return true;
+          }
           const [guildSettings, lastGifty] = await Promise.all([
             guildSettingsService.getGuildSettings(gifty.guildId, tx),
             giftyService.getLastSentGifty(gifty.guildId, gifty.fromUserId, tx),
