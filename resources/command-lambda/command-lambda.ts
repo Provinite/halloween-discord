@@ -50,6 +50,9 @@ export const actualHandler = async (
         } as const;
 
         // before processing, check if the interaction lambda responded in time
+        // we need to chill for a sec here. This isn't the best approach but
+        // otherwise sometimes discord 404's the interaction response.
+        await sleep(500);
         const response = await discordService.getInteractionResponse(body);
         commandLambdaLogger.info({
           message: "Interaction response received",
@@ -91,4 +94,8 @@ export function handler(
   callback: (err?: Error) => void,
 ): void {
   actualHandler(event).then(() => callback(), callback);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
