@@ -22,6 +22,8 @@ import { HalloweenDiscordError } from "./errors/HalloweenDiscordError";
 import { closeKnex } from "../common/db/client";
 import { discordService } from "../common/discord/discordService";
 import { giftyCommand } from "./commands/giftyCommand";
+import { adminknockCommand } from "./commands/adminKnockCommand";
+import { testWinCommand } from "./commands/testWinCommand";
 
 export type CommandLambdaEvent = {
   body: APIApplicationCommandGuildInteraction;
@@ -47,6 +49,8 @@ export const actualHandler = async (
           [HalloweenCommand.Settings]: settingsCommand,
           [HalloweenCommand.Credits]: creditsCommand,
           [HalloweenCommand.Gifty]: giftyCommand,
+          [HalloweenCommand.AdminKnock]: adminknockCommand,
+          [HalloweenCommand.TestWin]: testWinCommand,
         } as const;
 
         // before processing, check if the interaction lambda responded in time

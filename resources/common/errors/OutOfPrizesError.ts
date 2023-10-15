@@ -1,4 +1,4 @@
-import { RESTPatchAPIInteractionOriginalResponseJSONBody } from "discord-api-types";
+import { RESTPatchAPIInteractionOriginalResponseJSONBody } from "discord-api-types/v9";
 import {
   DiscordReportableError,
   DiscordReportableErrorConfig,

@@ -227,4 +227,25 @@ export const commandDefinitions: Record<
       ],
     },
   ],
+  [HalloweenCommand.AdminKnock]: {
+    name: HalloweenCommand.AdminKnock,
+    description:
+      "ADMIN ONLY Knock on behalf of a user that is otherwise incapable of utilizing the bot.",
+    type: ApplicationCommandType.ChatInput,
+    options: [
+      {
+        name: "user",
+        description:
+          "The user to knock for. Uses their knocks or gifties & rewards prizes to them.",
+        type: ApplicationCommandOptionType.User,
+        required: true,
+      },
+    ],
+  },
+  [HalloweenCommand.TestWin]: {
+    name: HalloweenCommand.TestWin,
+    description:
+      "ADMIN ONLY Send a message to the wins channel to verify the bot has permissions.",
+    type: ApplicationCommandType.ChatInput,
+  },
 };

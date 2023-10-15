@@ -152,6 +152,10 @@ export const knockCommand = chatCommandHandler(
             "" + (await giftyService.getPendingGiftyCount(guildId, userId, tx)),
           inline: true,
         });
+        fields.push({
+          name: "Trick or Treater",
+          value: `<@${userId}>`,
+        });
 
         await discordService.updateInteractionResponse(interaction, {
           allowed_mentions: {

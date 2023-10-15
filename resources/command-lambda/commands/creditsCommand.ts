@@ -36,7 +36,6 @@ export const creditsCommand = chatCommandHandler(
         credit: "Artwork & Organization",
         names: [
           "SpiritBurn",
-          "Baylee",
           "CloverCoin",
           "ethereal-dancer",
           "fishyyllama",
@@ -45,6 +44,15 @@ export const creditsCommand = chatCommandHandler(
           "PeaBandJ",
           "PixelRaccoon",
           "Zach-liversonthemoon",
+          "Chocobanyana",
+          "CinnriStreusel",
+          "Holohaze",
+          "OMG Productions",
+          "Maze/Woodes",
+          "23icefire",
+          "EmmyGoat",
+          "Skippy",
+          "Owlcoholic",
         ],
       },
       {
