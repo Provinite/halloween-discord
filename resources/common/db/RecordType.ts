@@ -27,7 +27,11 @@ export interface GuildSettings {
   winRate: number;
   winChannel: string | null;
 }
-
+export interface DeviantArtUser {
+  guildId: string;
+  deviantArtName: string;
+  userId: string;
+}
 export interface Gifty {
   id: number;
   guildId: string;
@@ -51,6 +55,7 @@ interface RecordKinds {
   [HalloweenTable.Prize]: Prize;
   [HalloweenTable.Migrations]: Migration;
   [HalloweenTable.Gifty]: Gifty;
+  [HalloweenTable.DeviantArtUsers]: DeviantArtUser;
 }
 
 export type RecordType<T extends HalloweenTable> = RecordKinds[T];

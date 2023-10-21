@@ -20,7 +20,10 @@ export const errorHandler = async (
           }
         : error,
     interaction,
-    sourceError: "sourceError" in error ? (error as any).sourceError : null,
+    sourceError:
+      (error as any).sourceError ??
+      (error as DiscordReportableError)?.config?.sourceError ??
+      null,
   });
   if (error instanceof DiscordReportableError) {
     await discordService.updateInteractionResponse(

@@ -4,14 +4,13 @@ import { bulkWriteGuildCommands } from "../resources/common/discord/bulkWriteGui
 import { commandDefinitions } from "../resources/common/discord/commandDefinitions";
 import { getClientCredentialsToken } from "../resources/common/discord/getClientCredentialsToken";
 import { logger } from "../resources/common/Logger";
-
 if (!process.env.TEST_GUILD_ID) {
   throw new Error("Must set cchdiscord_test_guild_id");
 }
 
 const testGuildId = process.env.TEST_GUILD_ID;
 
-(async function () {
+void (async function () {
   const token = await getClientCredentialsToken([
     OAuth2Scopes.ApplicationsCommandsUpdate,
   ]);

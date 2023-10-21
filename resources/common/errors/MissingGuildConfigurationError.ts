@@ -35,7 +35,7 @@ export class MissingGuildSettingsError extends DiscordReportableError {
     return {
       embeds: [
         {
-          title: "Cloverse Halloween 2021 - Not Ready Yet",
+          title: "Cloverse Halloween 2023 - Not Ready Yet",
           description:
             "The admins haven't set up the app for this server yet. Check back soon!",
           color: Color.Error,

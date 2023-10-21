@@ -31,7 +31,7 @@ export class EventNotStartedError extends DiscordReportableError {
     return {
       embeds: [
         {
-          title: "Cloverse Halloween 2021 - Event not started",
+          title: "Cloverse Halloween 2023 - Event not started",
           description: "The event hasn't started yet, but check back soon!",
           color: Color.Error,
           timestamp: getDiscordEmbedTimestamp(),

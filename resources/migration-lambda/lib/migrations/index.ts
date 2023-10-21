@@ -6,6 +6,7 @@ import { addWinRateMigration } from "./00003-add-winrate-field";
 import { addIsPendingFieldMigration } from "./00004-add-knock-is-pending-field";
 import { createGiftyTableMigration } from "./00005-create-gifty-table";
 import { addWinChannelSettingsFieldMigration } from "./00006-add-win-channel-settings-field";
+import { addDeviantArtUserTable } from "./00007-add-da-user-table";
 
 const migrations: Migration[] = [
   createGuildSettingsMigration,
@@ -15,6 +16,7 @@ const migrations: Migration[] = [
   addIsPendingFieldMigration,
   createGiftyTableMigration,
   addWinChannelSettingsFieldMigration,
+  addDeviantArtUserTable,
 ];
 
 const migrationsById: Record<string, Migration> = {};

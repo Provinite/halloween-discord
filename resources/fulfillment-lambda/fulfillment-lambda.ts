@@ -28,6 +28,8 @@ import {
 } from "discord-api-types/v9";
 import { getDiscordEmbedTimestamp } from "../common/discord/ui/getDiscordEmbedTimestamp";
 import { OutOfPrizesError } from "../common/errors/OutOfPrizesError";
+import { HalloweenCommand } from "../common/discord/HalloweenCommand";
+import { deviantArtUserService } from "../common/db/deviantArtUserService";
 
 /**
  * Lambda entry point
@@ -163,7 +165,13 @@ export const handler = async (
             tx,
           );
           await prizeService.decrementStock(prize.id, interaction.guild_id, tx);
-
+          const deviantArtUser = await deviantArtUserService.getDeviantArtUser(
+            {
+              guildId: interaction.guild_id,
+              userId: interaction.member.user.id,
+            },
+            tx,
+          );
           messageLogger.info({
             message: "Sending prize response",
             prizeId: prize.id,
@@ -224,7 +232,23 @@ export const handler = async (
             ],
           };
 
-          await discordService.updateInteractionResponse(interaction, message);
+          await discordService.updateInteractionResponse(interaction, {
+            ...message,
+            embeds: [
+              ...(message.embeds || []),
+              ...(deviantArtUser
+                ? []
+                : [
+                    {
+                      author: getDiscordEmbedAuthor(),
+                      title: "Reminder",
+                      description: `If you haven't yet, please set your DeviantArt username with thes \`/${HalloweenCommand.DeviantArt}\` command`,
+                      color: Color.Warning,
+                      timestamp: getDiscordEmbedTimestamp(),
+                    },
+                  ]),
+            ],
+          });
           if (guildSettings.winChannel) {
             await discordService.sendChannelMessage(
               guildSettings.winChannel,

@@ -138,6 +138,8 @@ export const addPrizeSubCommand = chatSubcommandHandler(
     if (!prize.weight) {
       prize.weight = 10;
     }
+    prize.currentStock = prize.initialStock;
+
     try {
       commandLambdaLogger.info({ message: "Adding prize", prize });
       prize = await prizeService.savePrize(prize);

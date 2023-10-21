@@ -41,6 +41,7 @@ export function knex<T extends HalloweenTable>(
         },
       },
       searchPath: ["public"],
+      debug: true,
     });
   }
   if (!instance) {

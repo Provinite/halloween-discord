@@ -22,11 +22,11 @@ export const infoCommand = chatCommandHandler(
           author: getDiscordEmbedAuthor(),
           timestamp: getDiscordEmbedTimestamp(),
           color: Color.Primary,
-          title: "Cloverse Halloween 2021 - Info",
+          title: "Cloverse Halloween 2023 - Info",
           description:
             "Event information and settings. These are the current settings" +
             " for the event. Note that they may change over time" +
-            " to make sure we give out all of our prizes.",
+            " to make sure we give out all of our prizes. All times are in US Central (Chicago) time.",
           fields: [
             {
               name: "Start Date",

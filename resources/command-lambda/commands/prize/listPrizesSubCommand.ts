@@ -47,7 +47,7 @@ export const listPrizesSubCommand = chatSubcommandHandler(
     const baseEmbed = {
       author: getDiscordEmbedAuthor(),
       color: Color.Primary,
-      title: "Cloverse Halloween 2021 - Prize List",
+      title: "Cloverse Halloween 2023 - Prize List",
       timestamp: getDiscordEmbedTimestamp(),
     };
 

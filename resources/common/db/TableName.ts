@@ -4,4 +4,5 @@ export enum HalloweenTable {
   GuildSettings = "guild_settings",
   Migrations = "migrations",
   Gifty = "gifty",
+  DeviantArtUsers = "deviantart_user",
 }

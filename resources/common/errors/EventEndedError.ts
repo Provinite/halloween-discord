@@ -30,7 +30,7 @@ export class EventEndedError extends DiscordReportableError {
     return {
       embeds: [
         {
-          title: "Cloverse Halloween 2021 - Event over",
+          title: "Cloverse Halloween 2023 - Event over",
           description:
             "The event is over. Thanks for participating and we'll be back soon with more fun!",
           color: Color.Error,

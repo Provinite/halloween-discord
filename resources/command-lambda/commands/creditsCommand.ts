@@ -84,7 +84,7 @@ export const creditsCommand = chatCommandHandler(
         {
           author: getDiscordEmbedAuthor(),
           color: Color.Primary,
-          title: "Cloverse Halloween 2021 - Credits",
+          title: "Cloverse Halloween 2023 - Credits",
           timestamp: getDiscordEmbedTimestamp(),
           fields,
         },

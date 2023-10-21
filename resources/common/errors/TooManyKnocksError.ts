@@ -43,7 +43,7 @@ export class TooManyKnocksError extends DiscordReportableError {
     return {
       embeds: [
         {
-          title: "Cloverse Halloween 2021 - Too Many Knocks",
+          title: "Cloverse Halloween 2023 - Too Many Knocks",
           description: `You're out of knocks for now. Come back soon, knocks reset every day.`,
           color: Color.Error,
           timestamp: getDiscordEmbedTimestamp(),

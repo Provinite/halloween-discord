@@ -57,7 +57,7 @@ export const giftyCommand = chatOrUserCommandHandler(
                 author: getDiscordEmbedAuthor(),
                 timestamp: getDiscordEmbedTimestamp(),
                 color: Color.Error,
-                title: "Cloverse Halloween 2021 - Gifty Already Sent",
+                title: "Cloverse Halloween 2023 - Gifty Already Sent",
                 description:
                   "You have already sent a gifty since the last reset. Try again soon!",
                 footer: getErrorDiscordEmbedFooter(),
@@ -79,7 +79,7 @@ export const giftyCommand = chatOrUserCommandHandler(
             author: getDiscordEmbedAuthor(),
             timestamp: getDiscordEmbedTimestamp(),
             color: Color.Primary,
-            title: "Cloverse Halloween 2021 - New Gifty!",
+            title: "Cloverse Halloween 2023 - New Gifty!",
             description: `<@${fromUserId}> is spreading the love! They just sent a one-time-use extra knock to a lucky friend.`,
             fields: [{ name: "Recipient", value: `<@${toUserId}>` }],
           },

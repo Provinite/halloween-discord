@@ -21,12 +21,17 @@ export const helpCommand = chatCommandHandler(
               "https://cdn.discordapp.com/app-icons/896600597053202462/14e838bbe4426c28377e05558c72ebd8.png?size=512",
           },
           color: Color.Primary,
-          title: "Cloverse Halloween 2021 - How to Participate",
+          title: "Cloverse Halloween 2023 - How to Participate",
           timestamp: getDiscordEmbedTimestamp(),
           fields: [
             {
               name: "Trick or Treat",
               value: "Use the /knock command to try for a prize",
+            },
+            {
+              name: "Connect DeviantArt",
+              value:
+                "Use the /deviantart command to set your DA username so we can deliver any adopts you win!",
             },
             {
               name: "Issues?",

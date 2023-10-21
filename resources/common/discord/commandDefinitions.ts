@@ -248,4 +248,17 @@ export const commandDefinitions: Record<
       "ADMIN ONLY Send a message to the wins channel to verify the bot has permissions.",
     type: ApplicationCommandType.ChatInput,
   },
+  [HalloweenCommand.DeviantArt]: {
+    name: HalloweenCommand.DeviantArt,
+    description: "Set your DeviantArt account name",
+    type: ApplicationCommandType.ChatInput,
+    options: [
+      {
+        name: "da_username",
+        description: "Your DeviantArt username. Used to deliver some prizes.",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  },
 };

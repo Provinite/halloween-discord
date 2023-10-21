@@ -42,7 +42,7 @@ export class HalloweenDiscordError extends DiscordReportableError {
           timestamp: getDiscordEmbedTimestamp(),
           color: Color.Error,
           footer: getErrorDiscordEmbedFooter(interaction),
-          title: "Cloverse Halloween 2021 - Error",
+          title: "Cloverse Halloween 2023 - Error",
           description: "Something went wrong",
           fields: [
             {

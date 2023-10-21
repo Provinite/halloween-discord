@@ -36,6 +36,10 @@ export enum HalloweenCommand {
    */
   AdminKnock = "adminknock",
   TestWin = "testwin",
+  /**
+   * Command for associating your DA account
+   */
+  DeviantArt = "deviantart",
 }
 
 export const commandStructure = {

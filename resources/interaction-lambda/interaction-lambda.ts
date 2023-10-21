@@ -22,6 +22,7 @@ import { Lambda } from "aws-sdk";
 import { envService } from "../common/envService";
 import { logger } from "../common/Logger";
 import { captureAWSClient } from "aws-xray-sdk-core";
+import { HalloweenCommand } from "../common/discord/HalloweenCommand";
 const lambda = captureAWSClient(new Lambda());
 
 const actualHandler = async (
@@ -92,6 +93,12 @@ const actualHandler = async (
         {
           statusCode: 200,
           body: {
+            data: {
+              flags:
+                body.data.name === HalloweenCommand.DeviantArt
+                  ? MessageFlags.Ephemeral
+                  : undefined,
+            },
             type: InteractionResponseType.DeferredChannelMessageWithSource,
           },
         },

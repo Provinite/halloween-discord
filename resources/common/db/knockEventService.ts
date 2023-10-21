@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { GuildSettings, KnockEvent, Prize } from "./RecordType";
+import { DeviantArtUser, GuildSettings, KnockEvent, Prize } from "./RecordType";
 import { HalloweenTable } from "./TableName";
 import { knex } from "./client";
 import { ValidationError } from "../errors/ValidationError";
@@ -148,6 +148,31 @@ export const knockEventService = {
       })
       .andWhere("time", ">", lastReset.toDate());
     return typeof count === "string" ? Number.parseInt(count, 10) : count;
+  },
+
+  async getWinnersTable(
+    guildId: string,
+  ): Promise<
+    Array<
+      Pick<KnockEvent, "id" | "guildId" | "userId" | "prizeId" | "time"> &
+        Pick<DeviantArtUser, "deviantArtName">
+    >
+  > {
+    return knex()
+      .select(
+        "ke.time",
+        "ke.id",
+        "ke.guildId",
+        "ke.prizeId",
+        "ke.userId",
+        "dau.deviantArtName",
+      )
+      .from({ ke: HalloweenTable.KnockEvent })
+      .leftJoin({ dau: HalloweenTable.DeviantArtUsers }, (join) =>
+        join.on("ke.guildId", "dau.guildId").andOn("ke.userId", "dau.userId"),
+      )
+      .where({ "ke.guildId": guildId })
+      .orderBy("ke.time", "asc");
   },
 
   /**

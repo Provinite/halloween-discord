@@ -36,7 +36,7 @@ export class OutOfPrizesError extends DiscordReportableError {
           author: getDiscordEmbedAuthor(),
           timestamp: getDiscordEmbedTimestamp(),
           color: Color.Primary,
-          title: "Cloverse Halloween 2021 - All Out of Prizes",
+          title: "Cloverse Halloween 2023 - All Out of Prizes",
           description: "We're all out of prizes this year. Thanks for joining!",
         },
       ],

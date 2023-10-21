@@ -12,7 +12,8 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy-test-commands": "DISCORD_APPLICATION_ID=$cchdiscord_discord_application_id DISCORD_CLIENT_SECRET=$cchdiscord_discord_client_secret TEST_GUILD_ID=$cchdiscord_test_guild_id ts-node bin/create-commands.ts",
-    "generate-image-manifest": "./bin/generate-image-manifest.sh"
+    "generate-image-manifest": "./bin/generate-image-manifest.sh",
+    "generate-admin-template-module": "ts-node resources/admin-lambda/build.ts"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.127.0",
@@ -33,7 +34,7 @@
     "d3node-barchart": "^0.1.1",
     "d3node-linechart": "^0.1.2",
     "d3node-output": "^1.0.3",
-    "discord-api-types": "^0.23.1",
+    "discord-api-types": "^0.37.60",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -59,6 +60,7 @@
     "aws-xray-sdk": "^3.3.3",
     "aws-xray-sdk-core": "^3.3.3",
     "axios": "^0.22.0",
+    "handlebars": "^4.7.8",
     "http-errors": "^1.8.0",
     "knex": "^0.95.11",
     "moment": "^2.29.1",

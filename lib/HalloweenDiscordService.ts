@@ -59,6 +59,10 @@ export class HalloweenDiscordService extends Construct {
    * Manually-invoked lambda for running migrations against the PG rds db.
    */
   migrationLambda: NodejsFunction;
+  /**
+   * Admin website lambda
+   */
+  adminLambda: NodejsFunction;
 
   /**
    * Necessary VPC to house Postgres RDS. One internet-facing subnet.
@@ -105,6 +109,7 @@ export class HalloweenDiscordService extends Construct {
     this.databaseInstance.grantConnect(this.fulfillmentLambda);
     this.databaseInstance.grantConnect(this.commandLambda);
     this.databaseInstance.grantConnect(this.migrationLambda);
+    this.databaseInstance.grantConnect(this.adminLambda);
 
     // This needs to go away.
     this.databaseInstance.connections.allowDefaultPortFromAnyIpv4();
@@ -118,11 +123,19 @@ export class HalloweenDiscordService extends Construct {
         batchSize: 1,
       }),
     );
+    // POST /
     this.apiGateway.root.addMethod(
       "POST",
-      new LambdaIntegration(this.interactionLambda, {
+      new LambdaIntegration(this.interactionLambda.currentVersion, {
         allowTestInvoke: false,
         timeout: Duration.seconds(10),
+      }),
+    );
+    // GET /admin
+    this.apiGateway.root.addResource("admin").addMethod(
+      "GET",
+      new LambdaIntegration(this.adminLambda, {
+        timeout: Duration.seconds(20),
       }),
     );
   }
@@ -131,6 +144,12 @@ export class HalloweenDiscordService extends Construct {
     this.imageBucket = new Bucket(this, "image-bucket", {
       publicReadAccess: true,
       websiteIndexDocument: "manifest.json",
+      blockPublicAccess: {
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      },
     });
 
     this.imageDeployment = new BucketDeployment(this, "image-deployment", {
@@ -192,6 +211,25 @@ export class HalloweenDiscordService extends Construct {
         tracing: Tracing.ACTIVE,
       },
     );
+
+    this.adminLambda = new NodejsFunction(this, "halloween-admin-lambda", {
+      runtime: Runtime.NODEJS_14_X,
+      entry: "resources/admin-lambda/admin-lambda.ts",
+      handler: "handler",
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+      environment: {
+        DISCORD_PUBLIC_KEY: process.env.cchdiscord_discord_public_key || "",
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        DB_SECRET_JSON: this.databaseInstance.secret!.secretValue.toString(),
+        COMMAND_LAMBDA_ARN: this.commandLambda.functionArn,
+      },
+      description: "Admin UI Lambda",
+      timeout: Duration.seconds(30),
+      tracing: Tracing.ACTIVE,
+    });
 
     this.fulfillmentLambda = new NodejsFunction(
       this,
